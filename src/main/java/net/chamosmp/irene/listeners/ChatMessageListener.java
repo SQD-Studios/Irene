@@ -1,12 +1,11 @@
-package not.savage.chat.listeners;
+package net.chamosmp.irene.listeners;
 
-import io.papermc.paper.event.player.AbstractChatEvent;
-import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.event.player.ChatEvent;
-import not.savage.chat.adventure.SimpleChatRenderer;
-import not.savage.chat.SimpleChat;
-import org.bukkit.Bukkit;
+import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.adventure.IreneChatRenderer;
+import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.ModerationUtil;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -22,14 +21,17 @@ import java.lang.reflect.Method;
  */
 public class ChatMessageListener implements Listener {
 
-    private final SimpleChat plugin;
-    private final SimpleChatRenderer renderer;
+    private final IrenePlugin plugin;
+    private final IreneChatRenderer renderer;
+    private final ModerationUtil moderationUtil;
 
-    public ChatMessageListener(final SimpleChat plugin) {
+    @SuppressWarnings("deprecation") // Checks the plugins for debugging purposes
+    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil) {
         this.plugin = plugin;
-        renderer = new SimpleChatRenderer(plugin);
+        renderer = new IreneChatRenderer(plugin);
+        this.moderationUtil = moderationUtil;
 
-        if (plugin.getConfig().getBoolean("debug", false)) {
+        if (plugin.debug) {
             plugin.getLogger().info("Debug mode enabled, printing registered listeners for chat events.");
             printListeners(AsyncChatEvent.class);
             printListeners(ChatEvent.class);
@@ -51,7 +53,7 @@ public class ChatMessageListener implements Listener {
                         AsyncChatEvent.class,
                         this,
                         priority,
-                        (listener, event) -> onPlayerChat((AsyncChatEvent) event),
+                        (_, event) -> onPlayerChat((AsyncChatEvent) event),
                         plugin
                 );
 
@@ -63,6 +65,9 @@ public class ChatMessageListener implements Listener {
         if (!event.isAsynchronous()) {
             plugin.getLogger().info("Failed to format chat message, event is not asynchronous.");
             return;
+        }
+        if (!moderationUtil.moderateMessage(event.getPlayer(), event.originalMessage())) {
+            event.setCancelled(true); // Cancels the event if the moderation check fails.
         }
         event.renderer(this.renderer);
     }

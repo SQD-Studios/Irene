@@ -1,0 +1,19 @@
+main: net.chamosmp.irene.IrenePlugin
+authors: [ "SQD Studios" ]
+description: ${description}
+version: ${version}
+api-version: 1.21
+name: Irene
+depend: [ LuckPerms ]
+softdepend: [ PlaceholderAPI ]
+
+dependencies:
+  server:
+    LuckPerms:
+      load: AFTER
+      required: true
+      join-classpath: true
+    PlaceholderAPI:
+      load: AFTER
+      required: false
+      join-classpath: true

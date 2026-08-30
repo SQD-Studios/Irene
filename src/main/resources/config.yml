@@ -1,12 +1,39 @@
-formats:
-  default: "%prefix% <white>%name%<reset> <gray>» %message%"
-  admin: "%prefix% <bold>%name%<reset> <gray>»</gray> <red>%message%"
-  owner: "%prefix%<reset> %name%<reset>%suffix%<reset> <gray>»</gray> <rainbow>%message%"
+chat-formats:
+  enabled: true
+
+  formats: # All the groups you want. If the player's group isn't here it will default to default.
+    default: "%prefix% <white>%name%<reset> <gray>» %message%"
+    admin: "%prefix% <bold>%name%<reset> <gray>»</gray> <red>%message%"
+    owner: "%prefix%<reset> %name%<reset>%suffix%<reset> <gray>»</gray> <rainbow>%message%"
+
+moderation:
+  enabled: true
+  checks:
+    limited-length:
+      length: -1 # -1 to disable
+      action:
+        block-message: true # This will block the message in chat
+
+        action: MUTE # Available: mute, kick, ban or anything else to disable it
+        duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly
+
+
+chat-heads: false # This puts the player's head before the message
+
+# Available options:
+# NON_INTERACTABLE, FORMATTED_TEXT, DEFAULT
+minimessage-formatting: false # WARNING. This may cause exploits in your server and make it easier for players to socially manipulate other players into running commands. If you want players to be able to use player head or such use "emojis"
+
+emojis:
+  enabled: true
+  character: ":" # For example, if ":" is the value, it will look like :Chamogelastos:
+
+  items: true # When true it will allow players to do something like :ender_pearl:, and replace it with the ender pearl texture. Needs the root enabled as true
+  player-heads: true # When true it will allow players to do something like :Chamogelastos: and replace it with the player head of Chamogelastos. Needs the root enabled as true
+
 
 priority: HIGHEST
-support_legacy_ampersand: true
 debug: false
 
 messages:
-  no_permission: "<white>Unknown command."
-  reloaded: "<green>Simple Chat Reloaded."
+  reloaded: "<green>Irene Reloaded."
