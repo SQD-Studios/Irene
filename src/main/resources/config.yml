@@ -14,6 +14,8 @@ moderation:
       action:
         block-message: true # This will block the message in chat
 
+        message: "<red>You flagged the auto mod! Reason: Your message was too long (Allowed size %a_size%, your size %p_size%)" # Allowed placeholders: %a_size% %p_size%
+
         action: MUTE # Available: mute, kick, ban or anything else to disable it
         duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly
 

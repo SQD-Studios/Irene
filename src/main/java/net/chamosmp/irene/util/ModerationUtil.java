@@ -5,6 +5,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+
 public class ModerationUtil {
 
     private final boolean isEnabled;
@@ -51,7 +53,12 @@ public class ModerationUtil {
             ConfigurationSection action = limitedLength.getConfigurationSection("action");
             if (action == null) return false;
             punish(getPunishType(action.getString("action", "NONE")));
-            return action.getBoolean("block-message");
+
+            String punishString = action.getString("message");
+            if (punishString != null) {
+                player.sendMessage(ColorUtil.parse(null, punishString, Map.of("a_size", length, "p_size", message.length())));
+            }
+            return !action.getBoolean("block-message");
         }
         return true;
     }

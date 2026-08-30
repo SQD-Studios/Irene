@@ -4,7 +4,6 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.event.player.ChatEvent;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.adventure.IreneChatRenderer;
-import net.chamosmp.irene.util.ColorUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -68,6 +67,7 @@ public class ChatMessageListener implements Listener {
         }
         if (!moderationUtil.moderateMessage(event.getPlayer(), event.originalMessage())) {
             event.setCancelled(true); // Cancels the event if the moderation check fails.
+            return;
         }
         event.renderer(this.renderer);
     }
