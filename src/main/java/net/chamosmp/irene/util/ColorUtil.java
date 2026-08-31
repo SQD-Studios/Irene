@@ -18,11 +18,19 @@ public final class ColorUtil {
     private static final boolean PAPI_PRESENT = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
     public static @NotNull Component parse(@NotNull String message) {
-        return MINI_MESSAGE.deserialize(legacyToMiniMessage(PlaceholderAPI.setPlaceholders(null, message)));
+        if (PAPI_PRESENT) {
+            return MINI_MESSAGE.deserialize(legacyToMiniMessage(PlaceholderAPI.setPlaceholders(null, message)));
+        } else {
+            return MINI_MESSAGE.deserialize(legacyToMiniMessage(message));
+        }
     }
 
     public static @NotNull Component parse(@NotNull Player player, @NotNull String message) {
-        return MINI_MESSAGE.deserialize(legacyToMiniMessage(PlaceholderAPI.setPlaceholders(player, message)));
+        if (PAPI_PRESENT) {
+            return MINI_MESSAGE.deserialize(legacyToMiniMessage(PlaceholderAPI.setPlaceholders(player, message)));
+        } else {
+            return MINI_MESSAGE.deserialize(legacyToMiniMessage(message));
+        }
     }
 
     public static @NotNull Component parse(Player player, @NotNull String message, @NotNull Map<?, ?> placeholders) {
@@ -31,7 +39,7 @@ public final class ColorUtil {
             resolved = resolved.replace("%" + entry.getKey() + "%", entry.getValue().toString());
         }
 
-        if (PAPI_PRESENT && player != null) {
+        if (PAPI_PRESENT) {
             resolved = PlaceholderAPI.setPlaceholders(player, resolved);
         }
 

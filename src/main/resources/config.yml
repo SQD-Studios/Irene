@@ -71,5 +71,15 @@ pings:
     volume: 100
     pitch: 100
 
+messaging:
+  enabled: false
+
+  database: REDIS # Available types: REDIS
+
+  host: "localhost"
+  port: "6379"
+  password: null
+
+
 messages:
   reloaded: "<green>Irene Reloaded."

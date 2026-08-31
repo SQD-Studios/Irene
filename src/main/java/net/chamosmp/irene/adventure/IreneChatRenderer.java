@@ -33,7 +33,7 @@ public class IreneChatRenderer implements ChatRenderer {
     private final IrenePlugin plugin;
     private final LuckPerms luckPerms;
     private final Map<String, Component> formats = new HashMap<>();
-    private final boolean usePlaceholderAPI;
+    private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
     public IreneChatRenderer(final IrenePlugin plugin) {
         this.plugin = plugin;
@@ -48,8 +48,7 @@ public class IreneChatRenderer implements ChatRenderer {
         LoggerUtil.log(LoggerUtil.LogType.INFO, "LuckPerms found, using it for chat formatting.");
 
         // Setup PlaceholderAPI
-        usePlaceholderAPI = plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
-        if (usePlaceholderAPI) {
+        if (IS_PAPI_ENABLED) {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "PlaceholderAPI found, placeholders will be processed in message format.");
         } else {
             LoggerUtil.log(LoggerUtil.LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed in message format.");
@@ -104,7 +103,7 @@ public class IreneChatRenderer implements ChatRenderer {
         }
         String stringFormat = ColorUtil.deParse(format);
 
-        if (usePlaceholderAPI) {
+        if (IS_PAPI_ENABLED) {
             String replacement = ColorUtil.deParse(ColorUtil.parse(source, stringFormat));
             replacement = PlaceholderAPI.setRelationalPlaceholders(source, (Player) viewer, replacement);
             stringFormat = replacement;
@@ -212,7 +211,7 @@ public class IreneChatRenderer implements ChatRenderer {
                     message = message.replace(pingChar + key, plugin.getConfig().getString("pings.color", "<gold>") + pingChar + key + "<reset>");
                     continue;
                 }
-                message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch)   );
+                message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch));
                 list.add(key);
             }
             return message;

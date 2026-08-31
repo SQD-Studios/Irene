@@ -4,8 +4,10 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.event.player.ChatEvent;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.adventure.IreneChatRenderer;
+import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -13,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.plugin.RegisteredListener;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -24,12 +27,14 @@ public class ChatMessageListener implements Listener {
     private final IrenePlugin plugin;
     private final IreneChatRenderer renderer;
     private final ModerationUtil moderationUtil;
+    private final @Nullable MessageMessaging messageMessaging;
 
     @SuppressWarnings("deprecation") // Checks the plugins for debugging purposes
-    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil) {
+    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging) {
         this.plugin = plugin;
         renderer = new IreneChatRenderer(plugin);
         this.moderationUtil = moderationUtil;
+        this.messageMessaging = messageMessaging;
 
         if (plugin.debug) {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode enabled, printing registered listeners for chat events.");
@@ -71,6 +76,9 @@ public class ChatMessageListener implements Listener {
             return;
         }
         event.renderer(this.renderer);
+        if (messageMessaging != null) {
+            messageMessaging.sendMessage(this.renderer.render(event.getPlayer(), event.getPlayer().displayName(), event.message(), event.getPlayer()));
+        }
     }
 
     private void printListeners(Class<? extends Event> eventClass) {

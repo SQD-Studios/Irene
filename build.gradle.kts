@@ -22,11 +22,15 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
+    // StrokkCommands
     compileOnly("net.strokkur.commands:annotations-paper:2.2.0-SNAPSHOT")
     annotationProcessor("net.strokkur.commands:processor-paper:2.2.0-SNAPSHOT")
 
+    // Plugin Dependencies
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
+
+    implementation("io.lettuce:lettuce-core:7.7.0.RELEASE")
 }
 
 group = "net.chamosmp"

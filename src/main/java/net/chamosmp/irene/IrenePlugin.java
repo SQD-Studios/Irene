@@ -1,5 +1,6 @@
 package net.chamosmp.irene;
 
+import com.google.common.eventbus.Subscribe;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
@@ -7,16 +8,20 @@ import net.chamosmp.irene.commands.MessageCommandBrigadier;
 import net.chamosmp.irene.commands.RespondCommandBrigadier;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
+import net.chamosmp.irene.messaging.MessageMessaging;
+import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.ConfigUtil;
 import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 public class IrenePlugin extends JavaPlugin {
 
     private DebugListener debugListener;
     private ChatMessageListener chatMessageListener;
     private ModerationUtil moderationUtil;
+    private @Nullable MessageMessaging messageMessaging;
 
     public boolean debug = getConfig().getBoolean("debug", false);
 
@@ -27,10 +32,12 @@ public class IrenePlugin extends JavaPlugin {
         }
         ConfigUtil.loadOrAdapt(this, "config.yml");
 
+        setupPluginMessaging();
+
         registerCommands();
 
         this.moderationUtil = new ModerationUtil(this);
-        this.chatMessageListener = new ChatMessageListener(this, moderationUtil);
+        this.chatMessageListener = new ChatMessageListener(this, moderationUtil, messageMessaging);
 
         if (debug) {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode is enabled.");
@@ -43,11 +50,16 @@ public class IrenePlugin extends JavaPlugin {
     public void onDisable() {
         LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene plugin is stopping...");
         AsyncChatEvent.getHandlerList().unregister(this);
+
+        if (messageMessaging != null) {
+            messageMessaging.closeConnection();
+        }
     }
 
+    @SuppressWarnings("all")
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
-            IreneCommandBrigadier.register(event.registrar(), this, moderationUtil);
+            IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging); // We know the parameter may be null
 
             if (getConfig().getBoolean("private-message.enabled", true)) {
                 event.registrar().register(
@@ -64,5 +76,14 @@ public class IrenePlugin extends JavaPlugin {
                 }
             }
         }));
+    }
+
+    public void setupPluginMessaging() {
+        if (getConfig().getBoolean("messaging.enabled", false)) {
+            switch (getConfig().getString("messaging.type", "REDIS").toUpperCase()) {
+                case "REDIS":
+                    messageMessaging = new RedisMessage(this);
+            }
+        }
     }
 }
