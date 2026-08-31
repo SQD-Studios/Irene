@@ -4,16 +4,23 @@ import io.papermc.paper.chat.ChatRenderer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.LoggerUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,22 +42,22 @@ public class IreneChatRenderer implements ChatRenderer {
         final RegisteredServiceProvider<LuckPerms> lpsp = plugin.getServer().getServicesManager().getRegistration(LuckPerms.class);
         luckPerms = (lpsp != null) ? lpsp.getProvider() : null;
         if (luckPerms == null) {
-            plugin.getLogger().severe("LuckPerms is not available! Irene will not function properly.");
+            LoggerUtil.log(LoggerUtil.LogType.SEVERE, "LuckPerms is not available! Irene will not function properly.");
             throw new IllegalStateException("LuckPerms is required for Irene to function.");
         }
-        plugin.getLogger().info("LuckPerms found, using it for chat formatting.");
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "LuckPerms found, using it for chat formatting.");
 
         // Setup PlaceholderAPI
         usePlaceholderAPI = plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
         if (usePlaceholderAPI) {
-            plugin.getLogger().info("PlaceholderAPI found, placeholders will be processed in message format.");
+            LoggerUtil.log(LoggerUtil.LogType.INFO, "PlaceholderAPI found, placeholders will be processed in message format.");
         } else {
-            plugin.getLogger().warning("PlaceholderAPI not found, placeholders will not be processed in message format.");
+            LoggerUtil.log(LoggerUtil.LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed in message format.");
         }
 
         // Make sure the config has at least one format defined
         if (!plugin.getConfig().isConfigurationSection("chat-formats.formats")) {
-            plugin.getLogger().warning("No chat formats found in config! Please define at least a 'default' format.");
+            LoggerUtil.log(LoggerUtil.LogType.WARNING, "No chat formats found in config! Please define at least a 'default' format.");
             throw new IllegalStateException("Chat formats are not defined in the config.");
         }
 
@@ -72,7 +79,7 @@ public class IreneChatRenderer implements ChatRenderer {
             }
         });
 
-        plugin.getLogger().info("Loaded " + formats.size() + " chat formats from config.");
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "Loaded " + formats.size() + " chat formats from config.");
     }
 
     @Override
@@ -86,13 +93,13 @@ public class IreneChatRenderer implements ChatRenderer {
 
         final String formatKey = user.getPrimaryGroup();
         if (formatKey == null || formatKey.isEmpty()) {
-            plugin.getLogger().warning("Player " + source.getName() + " has no primary group set.");
+            LoggerUtil.log(LoggerUtil.LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
             return Component.empty();
         }
 
         Component format = formats.getOrDefault(formatKey, formats.get("default"));
         if (format == null) {
-            plugin.getLogger().warning("Config does not contain a format for group " + formatKey + " and/or no \"default\" format is set.");
+            LoggerUtil.log(LoggerUtil.LogType.WARNING, "Config does not contain a format for group " + formatKey + " and/or no \"default\" format is set.");
             return Component.empty();
         }
         String stringFormat = ColorUtil.deParse(format);
@@ -103,17 +110,13 @@ public class IreneChatRenderer implements ChatRenderer {
             stringFormat = replacement;
         }
 
-        if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
-            message = ColorUtil.parse(ColorUtil.emojiPlaceholder(
-                    ColorUtil.deParse(message),
-                    plugin.getConfig().getString("emojis.character", ":"),
-                    plugin.getConfig().getBoolean("emojis.items"),
-                    plugin.getConfig().getBoolean("emojis.player-heads")
-            ));
-        }
-
-        if (plugin.getConfig().getBoolean("chat-heads")) {
-            stringFormat = "<head:" + source.getUniqueId() + ">" + stringFormat;
+        if (plugin.getConfig().getBoolean("chat-heads.enabled")) {
+            String type = plugin.getConfig().getString("chat-heads.type", "").toLowerCase();
+            if ("message".equals(type)) {
+                stringFormat = "<head:" + source.getUniqueId() + ">" + stringFormat;
+            } else if ("name".equals(type)) {
+                stringFormat = stringFormat.replace(source.getName(), "<head:" + source.getUniqueId() + ">" + source.getName());
+            }
         }
 
         final Map<String, String> placeholders = new HashMap<>();
@@ -134,6 +137,19 @@ public class IreneChatRenderer implements ChatRenderer {
                 break;
             default:
                 break;
+        }
+
+        if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
+            message = ColorUtil.parse(ColorUtil.emojiPlaceholder(
+                    ColorUtil.deParse(message),
+                    plugin.getConfig().getString("emojis.character", ":"),
+                    plugin.getConfig().getBoolean("emojis.items"),
+                    plugin.getConfig().getBoolean("emojis.player-heads")
+            ));
+        }
+
+        if (plugin.getConfig().getBoolean("pings.enabled", true)) {
+            message = ColorUtil.parse(pingCheck(ColorUtil.deParse(message), plugin.getConfig().getString("pings.ping-character", "@")));
         }
 
         placeholders.put("prefix", prefix);
@@ -162,5 +178,58 @@ public class IreneChatRenderer implements ChatRenderer {
         } else {
             return message;
         }
+    }
+
+    public @NotNull String pingCheck(@NotNull String message, @NotNull String pingChar) {
+        FileConfiguration config = plugin.getConfig();
+
+        String stringSound = config.getString("pings.sound.name", "NOTE_BLOCK_BANJO").toLowerCase();
+        Sound sound = Registry.SOUND_EVENT.get(new NamespacedKey("minecraft", stringSound));
+        if (sound == null) {
+            sound = Sound.BLOCK_NOTE_BLOCK_BIT;
+        }
+        float volume = config.getInt("pings.sound.volume", 1);
+        float pitch = config.getInt("pings.sound.pitch", 1);
+
+        if (message.contains(pingChar)) { // TODO If someone pings 2 players it doesn't show the message + need to relog to message
+            List<String> list = new ArrayList<>();
+            for (int i = message.indexOf(pingChar); message.indexOf(pingChar, i) != -1; i++) {
+                int second = message.indexOf(" ", i + 1);
+
+                // We are not certain that this may be a ping, but if you just ping a player (withot a space), it will ping.
+                // To be sure it's a player below snippets check if a player exists with that name and is online
+                if (second == -1) {
+                    second = message.length();
+                    String key = message.substring(i + 1, second);
+                    message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch));
+                    break;
+                }
+
+                if (i == -1) return message;
+
+                String key = message.substring(i + 1, second);
+                if (list.contains(key)) {
+                    message = message.replace(pingChar + key, plugin.getConfig().getString("pings.color", "<gold>") + pingChar + key + "<reset>");
+                    continue;
+                }
+                message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch)   );
+                list.add(key);
+            }
+            return message;
+        }
+        return message;
+    }
+
+    private @NotNull String pingWithPlayer(@NotNull String key, @NotNull String pingChar, Sound sound, float volume, float pitch) {
+        String result = pingChar + key;
+        Player player = Bukkit.getPlayerExact(key);
+        if (player != null && player.isConnected()) {
+            result = plugin.getConfig().getString("pings.color", "<gold>") + result + "<reset>";
+            player.getScheduler().run(plugin, _ -> {
+                player.stopSound(sound);
+                player.playSound(player, sound, volume, pitch);
+            }, null);
+        }
+        return result;
     }
 }

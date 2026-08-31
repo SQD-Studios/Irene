@@ -8,6 +8,8 @@ chat-formats:
 
 moderation:
   enabled: true
+  word-filter:
+  # TODO
   checks:
     limited-length:
       length: -1 # -1 to disable
@@ -20,10 +22,12 @@ moderation:
         duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly
 
 
-chat-heads: false # This puts the player's head before the message
+chat-heads:
+  enabled: true # Should it be enabled
+  type: NAME # Available options: NAME, MESSAGE. Based on what you put, it will put the chat head before it.
 
 # Available options:
-# NON_INTERACTABLE, FORMATTED_TEXT, DEFAULT
+# NON_INTERACTABLE, FORMATTED_TEXT, DEFAULT, anything else to disable
 minimessage-formatting: false # WARNING. This may cause exploits in your server and make it easier for players to socially manipulate other players into running commands. If you want players to be able to use player head or such use "emojis"
 
 emojis:
@@ -36,6 +40,36 @@ emojis:
 
 priority: HIGHEST
 debug: false
+
+private-message:
+  enabled: true # You need to restart the server for this to take place
+  format: "<#FF00FF><b>MSG <reset>| <#FF00FF> %sending_player_you% to %receiving_player_you%</#FF00FF> > <#FF00FF>%message%" # The message format. If you see, the placeholders are ending in you, that means instead of showing the entire name, it'll if the player is you.
+  player-not-online: "<gray>%player% is not online"
+
+  you-string: "You"
+
+  allow-players-to-self-message: true
+  you-cannot-message-yourself: "<red>You cannot message yourself!" # Needs the above option disabled
+
+
+  aliases:
+    - w
+    - message
+    - whisper
+  respond:
+    enabled: true
+    not-in-conversation: "<red>You are not in a conversation!"
+    aliases:
+      - "respond"
+
+pings:
+  enabled: false
+  ping-character: "@"
+  color: "<gold>" # What mini message color should the ping have?
+  sound:
+    name: 'NOTE_BLOCK_BELL' # The sound to play, to the player being pinged. Find a value here: https://jd.papermc.io/paper/26.2/org/bukkit/Sound.html and remove the first prefix
+    volume: 100
+    pitch: 100
 
 messages:
   reloaded: "<green>Irene Reloaded."

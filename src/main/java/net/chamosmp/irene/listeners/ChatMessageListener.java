@@ -4,6 +4,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.event.player.ChatEvent;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.adventure.IreneChatRenderer;
+import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -31,7 +32,7 @@ public class ChatMessageListener implements Listener {
         this.moderationUtil = moderationUtil;
 
         if (plugin.debug) {
-            plugin.getLogger().info("Debug mode enabled, printing registered listeners for chat events.");
+            LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode enabled, printing registered listeners for chat events.");
             printListeners(AsyncChatEvent.class);
             printListeners(ChatEvent.class);
             printListeners(PlayerChatEvent.class);
@@ -56,13 +57,13 @@ public class ChatMessageListener implements Listener {
                         plugin
                 );
 
-        plugin.getLogger().info("Registered chat message listener with priority: " + priority.name());
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered chat message listener with priority: " + priority.name());
     }
 
     // No @EventHandler annotation here since we use an EventExecutor to handle the event
     public void onPlayerChat(AsyncChatEvent event) {
         if (!event.isAsynchronous()) {
-            plugin.getLogger().info("Failed to format chat message, event is not asynchronous.");
+            LoggerUtil.log(LoggerUtil.LogType.INFO, "Failed to format chat message, event is not asynchronous.");
             return;
         }
         if (!moderationUtil.moderateMessage(event.getPlayer(), event.originalMessage())) {
@@ -79,7 +80,7 @@ public class ChatMessageListener implements Listener {
             HandlerList handlerList = (HandlerList) getHandlerListMethod.invoke(null);
 
             if (handlerList.getRegisteredListeners().length == 0) {
-                plugin.getLogger().info("No listeners registered for event: " + eventClass.getSimpleName());
+                LoggerUtil.log(LoggerUtil.LogType.INFO, "No listeners registered for event: " + eventClass.getSimpleName());
                 return;
             }
 
@@ -88,7 +89,7 @@ public class ChatMessageListener implements Listener {
                 Class<?> listenerClass = listenerInstance.getClass();
                 String pluginName = registered.getPlugin().getName();
                 EventPriority priority = registered.getPriority();
-                plugin.getLogger().info("Listener: " + listenerClass.getName() + ", Plugin: " + pluginName + ", Priority: " + priority.name());
+                LoggerUtil.log(LoggerUtil.LogType.INFO, "Listener: " + listenerClass.getName() + ", Plugin: " + pluginName + ", Priority: " + priority.name());
             }
 
         } catch (Exception e) {
