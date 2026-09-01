@@ -33,6 +33,7 @@ dependencies {
     // Plugin Messaging
     implementation("io.lettuce:lettuce-core:7.7.0.RELEASE")
     implementation("io.nats:jnats:2.26.2")
+    implementation("com.rabbitmq:amqp-client:5.35.0")
 }
 
 group = "net.chamosmp"

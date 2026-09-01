@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 public class NatsMessage implements MessageMessaging {
+
+    private static final String CHANNEL_NAME = "irene-nats-message:";
 
     private final IrenePlugin plugin;
 
@@ -53,7 +56,7 @@ public class NatsMessage implements MessageMessaging {
         return CompletableFuture.runAsync(() -> {
             String messageAndUuid = ColorUtil.deParse(message) + temporaryServerUuid;
             byte[] messageInBytes = messageAndUuid.getBytes(StandardCharsets.UTF_8);
-            connection.publish("irene-nats-message:", messageInBytes);
+            connection.publish(CHANNEL_NAME, messageInBytes);
         });
     }
 
@@ -65,11 +68,12 @@ public class NatsMessage implements MessageMessaging {
                 Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(stringMessage)));
             }
         });
-        d.subscribe("irene-nats-message:");
+        d.subscribe(CHANNEL_NAME);
         LoggerUtil.log(LoggerUtil.LogType.INFO, "Successfully subscribed to the NATS Channels");
     }
 
-    private @NotNull String removeUuidFromMessage(@NotNull String message) {
+    @Override
+    public @NonNull String removeUuidFromMessage(@NotNull String message) {
         boolean isStillGoing = true;
         for (int i = 0; isStillGoing; i++) {
             try {

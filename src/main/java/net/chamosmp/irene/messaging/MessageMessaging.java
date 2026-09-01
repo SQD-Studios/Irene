@@ -15,4 +15,7 @@ public interface MessageMessaging {
     void onMessage();
 
     void closeConnection();
+
+    @NotNull String removeUuidFromMessage(String message);
+
 }

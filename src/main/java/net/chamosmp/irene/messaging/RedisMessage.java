@@ -13,10 +13,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.UUID;
 
 public class RedisMessage implements MessageMessaging {
+
+    private static final String CHANNEL_NAME = "irene-redis-message:";
 
     private final IrenePlugin plugin;
 
@@ -54,7 +57,7 @@ public class RedisMessage implements MessageMessaging {
             this.async = connection.async();
 
             RedisFuture<Void> subscribeAsync =
-                    async.subscribe("irene-redis-message:");
+                    async.subscribe(CHANNEL_NAME);
             subscribeAsync.thenAccept(_ -> {
                 LoggerUtil.log(LoggerUtil.LogType.INFO, "Successfully subscribed to the Redis Channels");
             });
@@ -65,7 +68,7 @@ public class RedisMessage implements MessageMessaging {
 
     @Override
     public @Nullable RedisFuture<Long> sendMessage(@NotNull Component message) {
-        return async.publish("irene-redis-message:", ColorUtil.deParse(message) + temporaryServerUuid);
+        return async.publish(CHANNEL_NAME, ColorUtil.deParse(message) + temporaryServerUuid);
     }
 
     @Override
@@ -73,14 +76,15 @@ public class RedisMessage implements MessageMessaging {
         connection.addListener(new RedisPubSubAdapter<>() {
             @Override
             public void message(String channel, String message) {
-                if (channel.equals("irene-redis-message:") && !message.endsWith(temporaryServerUuid.toString())) {
+                if (channel.equals(CHANNEL_NAME) && !message.endsWith(temporaryServerUuid.toString())) {
                     Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(message)));
                 }
             }
         });
     }
 
-    private @NotNull String removeUuidFromMessage(@NotNull String message) {
+    @Override
+    public @NonNull String removeUuidFromMessage(@NotNull String message) {
         boolean isStillGoing = true;
         for (int i = 0; isStillGoing; i++) {
             try {
@@ -98,7 +102,7 @@ public class RedisMessage implements MessageMessaging {
 
     @Override
     public void closeConnection() {
-        async.unsubscribe("irene-redis-message:");
+        async.unsubscribe(CHANNEL_NAME);
         connection.close();
         redisClient.close();
         LoggerUtil.log(LoggerUtil.LogType.INFO, "Closed connection to Redis");

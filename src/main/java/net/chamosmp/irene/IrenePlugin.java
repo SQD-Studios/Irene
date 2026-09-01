@@ -9,6 +9,7 @@ import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
+import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.ConfigUtil;
 import net.chamosmp.irene.util.LoggerUtil;
@@ -88,6 +89,8 @@ public class IrenePlugin extends JavaPlugin {
                     messageMessaging = new RedisMessage(this);
                 case "NATS":
                     messageMessaging = new NatsMessage(this);
+                case "RABBITMQ":
+                    messageMessaging = new RabbitMessage(this);
             }
         }
     }

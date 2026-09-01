@@ -74,11 +74,13 @@ pings:
 messaging:
   enabled: false
 
-  database: REDIS # Available types: REDIS, NATS
+  database: REDIS # Available types: REDIS, NATS, RABBITMQ
 
   host: "localhost"
   port: "6379"
+
   password: null # Not used in NATS
+  rabbitmq-user: "" # RabbitMQ Only
 
 
 messages:

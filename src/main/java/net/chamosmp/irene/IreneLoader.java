@@ -17,6 +17,7 @@ public class IreneLoader implements PluginLoader {
 
         mavenRepository.addDependency(new Dependency(new DefaultArtifact("io.lettuce:lettuce-core:7.7.0.RELEASE"), null));
         mavenRepository.addDependency(new Dependency(new DefaultArtifact("io.nats:jnats:2.26.2"), null));
+        mavenRepository.addDependency(new Dependency(new DefaultArtifact("com.rabbitmq:amqp-client:5.35.0"), null));
 
         classpathBuilder.addLibrary(mavenRepository);
     }
