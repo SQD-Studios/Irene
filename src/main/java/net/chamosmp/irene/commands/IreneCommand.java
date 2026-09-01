@@ -5,6 +5,7 @@ import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.strokkur.commands.Executes;
 import net.strokkur.commands.permission.Permission;
@@ -18,11 +19,13 @@ public class IreneCommand {
     private final IrenePlugin plugin;
     private final ModerationUtil moderationUtil;
     private final @Nullable MessageMessaging messageMessaging;
+    private final LuckPermsUtil luckPermsUtil;
 
-    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging) {
+    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil) {
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
         this.messageMessaging = messageMessaging;
+        this.luckPermsUtil = luckPermsUtil;
     }
 
     @Executes("reload")
@@ -30,7 +33,7 @@ public class IreneCommand {
     public void onReload(@NotNull CommandSender commandSender) {
         plugin.reloadConfig();
         AsyncChatEvent.getHandlerList().unregister(plugin);
-        new ChatMessageListener(plugin, moderationUtil, messageMessaging);
+        new ChatMessageListener(plugin, moderationUtil, messageMessaging, luckPermsUtil);
         commandSender.sendMessage(ColorUtil.parse(plugin.getConfig().getString("messages.reloaded", "<green>Irene Reloaded.")));
     }
 }

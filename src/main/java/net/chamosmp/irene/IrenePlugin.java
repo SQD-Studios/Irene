@@ -10,12 +10,14 @@ import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
+import net.chamosmp.irene.listeners.JoinListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.ConfigUtil;
 import net.chamosmp.irene.util.LoggerUtil;
+import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,6 +29,7 @@ public class IrenePlugin extends JavaPlugin {
     private ChatMessageListener chatMessageListener;
     private ModerationUtil moderationUtil;
     private @Nullable MessageMessaging messageMessaging;
+    private LuckPermsUtil luckPermsUtil;
 
     public boolean debug = getConfig().getBoolean("debug", false);
 
@@ -41,8 +44,10 @@ public class IrenePlugin extends JavaPlugin {
 
         registerCommands();
 
+        this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
-        this.chatMessageListener = new ChatMessageListener(this, moderationUtil, messageMessaging);
+        this.chatMessageListener = new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil);
+        new JoinListener(this);
 
         if (debug) {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode is enabled.");
@@ -70,7 +75,7 @@ public class IrenePlugin extends JavaPlugin {
     @SuppressWarnings("all")
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
-            IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging); // We know the parameter may be null
+            IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil); // We know the parameter may be null
 
             if (getConfig().getBoolean("private-message.enabled", true)) {
                 event.registrar().register(

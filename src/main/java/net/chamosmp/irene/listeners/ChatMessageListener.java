@@ -6,7 +6,9 @@ import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.adventure.IreneChatRenderer;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.LoggerUtil;
+import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import net.luckperms.api.LuckPerms;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -29,9 +31,9 @@ public class ChatMessageListener implements Listener {
     private final @Nullable MessageMessaging messageMessaging;
 
     @SuppressWarnings("deprecation") // Checks the plugins for debugging purposes
-    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging) {
+    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil) {
         this.plugin = plugin;
-        renderer = new IreneChatRenderer(plugin);
+        renderer = new IreneChatRenderer(plugin, luckPermsUtil);
         this.moderationUtil = moderationUtil;
         this.messageMessaging = messageMessaging;
 

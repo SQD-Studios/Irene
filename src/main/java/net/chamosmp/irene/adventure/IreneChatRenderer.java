@@ -5,19 +5,17 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.util.ColorUtil;
 import net.chamosmp.irene.util.LoggerUtil;
+import net.chamosmp.irene.util.LuckPermsUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.luckperms.api.LuckPerms;
-import net.luckperms.api.cacheddata.CachedMetaData;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -31,21 +29,16 @@ import java.util.Map;
 public class IreneChatRenderer implements ChatRenderer {
 
     private final IrenePlugin plugin;
-    private final LuckPerms luckPerms;
+    private final LuckPermsUtil luckPermsUtil;
+
     private final Map<String, Component> formats = new HashMap<>();
     private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
-    public IreneChatRenderer(final IrenePlugin plugin) {
+    public IreneChatRenderer(final IrenePlugin plugin, LuckPermsUtil luckPermsUtil) {
         this.plugin = plugin;
 
-        // Setup Luck Perms
-        final RegisteredServiceProvider<LuckPerms> lpsp = plugin.getServer().getServicesManager().getRegistration(LuckPerms.class);
-        luckPerms = (lpsp != null) ? lpsp.getProvider() : null;
-        if (luckPerms == null) {
-            LoggerUtil.log(LoggerUtil.LogType.SEVERE, "LuckPerms is not available! Irene will not function properly.");
-            throw new IllegalStateException("LuckPerms is required for Irene to function.");
-        }
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "LuckPerms found, using it for chat formatting.");
+        // Setup LuckPerms
+        this.luckPermsUtil = luckPermsUtil;
 
         // Setup PlaceholderAPI
         if (IS_PAPI_ENABLED) {
@@ -88,9 +81,8 @@ public class IreneChatRenderer implements ChatRenderer {
             // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
             viewer = source;
         }
-        final CachedMetaData user = luckPerms.getPlayerAdapter(Player.class).getMetaData(source);
 
-        final String formatKey = user.getPrimaryGroup();
+        final String formatKey = luckPermsUtil.getPrimaryGroup(source);
         if (formatKey == null || formatKey.isEmpty()) {
             LoggerUtil.log(LoggerUtil.LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
             return Component.empty();
@@ -119,8 +111,8 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         final Map<String, String> placeholders = new HashMap<>();
-        String prefix = user.getPrefix() != null ? user.getPrefix() : "";
-        String suffix = user.getSuffix() != null ? user.getSuffix() : "";
+        String prefix = luckPermsUtil.getPrefix(source);
+        String suffix = luckPermsUtil.getSuffix(source);
 
 
         String stringMessage = PlainTextComponentSerializer.plainText().serialize(message);
@@ -158,7 +150,7 @@ public class IreneChatRenderer implements ChatRenderer {
         placeholders.put("group", formatKey);
 
         // Find meta tag references %meta-key% and replace them with their values
-        for (Map.Entry<String, List<String>> meta : user.getMeta().entrySet()) {
+        for (Map.Entry<String, List<String>> meta : luckPermsUtil.getMeta(source).entrySet()) {
             String key = meta.getKey();
             List<String> values = meta.getValue();
             if (values.isEmpty()) {
@@ -190,12 +182,12 @@ public class IreneChatRenderer implements ChatRenderer {
         float volume = config.getInt("pings.sound.volume", 1);
         float pitch = config.getInt("pings.sound.pitch", 1);
 
-        if (message.contains(pingChar)) { // TODO If someone pings 2 players it doesn't show the message + need to relog to message
+        if (message.contains(pingChar)) {
             List<String> list = new ArrayList<>();
             for (int i = message.indexOf(pingChar); message.indexOf(pingChar, i) != -1; i++) {
                 int second = message.indexOf(" ", i + 1);
 
-                // We are not certain that this may be a ping, but if you just ping a player (withot a space), it will ping.
+                // We are not certain that this may be a ping, but if you just ping a player (without a space), it will ping.
                 // To be sure it's a player below snippets check if a player exists with that name and is online
                 if (second == -1) {
                     second = message.length();

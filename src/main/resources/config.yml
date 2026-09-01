@@ -89,6 +89,27 @@ discord-integration: # Requires discordsrv or essentialsxdiscord (WARNING: Not T
   # sender, message, channel
   mc-format: "<blue>Discord <reset>| %sender% > %message%"
 
+first-join-message:
+  enabled: true
+
+  messages: # Available placeholders: name, prefix, suffix
+    - "<aqua>Welcome to the server!"
+    - "<aqua>We have a friendly community"
+
+join-message: # Messages a player on join
+  enabled: true
+
+  send-on-first-join: false # Can be used to resolve conflicts with "first-join-message"
+
+  messages: # Available placeholders: name, prefix, suffix
+    - "<aqua>Welcome back %name%"
+
+join-and-leave-messages:
+  enabled: true
+
+  # Available placeholders: name, prefix, suffix
+  join: "<yellow>%name% joined the game"
+  leave: "<yellow>%name% left the game"
 
 messages:
   reloaded: "<green>Irene Reloaded."
