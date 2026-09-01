@@ -184,7 +184,7 @@ public class IreneChatRenderer implements ChatRenderer {
 
         String stringSound = config.getString("pings.sound.name", "NOTE_BLOCK_BANJO").toLowerCase();
         Sound sound = Registry.SOUND_EVENT.get(new NamespacedKey("minecraft", stringSound));
-        if (sound == null) {
+        if (sound == null) { // TODO Doesn't really work so it always falls back here
             sound = Sound.BLOCK_NOTE_BLOCK_BIT;
         }
         float volume = config.getInt("pings.sound.volume", 1);

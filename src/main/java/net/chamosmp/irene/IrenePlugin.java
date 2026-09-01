@@ -1,10 +1,13 @@
 package net.chamosmp.irene;
 
+import github.scarsz.discordsrv.DiscordSRV;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
 import net.chamosmp.irene.commands.MessageCommandBrigadier;
 import net.chamosmp.irene.commands.RespondCommandBrigadier;
+import net.chamosmp.irene.discord.DiscordSRVIntegration;
+import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
@@ -14,6 +17,7 @@ import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.ConfigUtil;
 import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +48,9 @@ public class IrenePlugin extends JavaPlugin {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode is enabled.");
             this.debugListener = new DebugListener(this);
         }
+
+        setupDiscord();
+
         LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene is waiting for chat events...");
     }
 
@@ -91,6 +98,18 @@ public class IrenePlugin extends JavaPlugin {
                     messageMessaging = new NatsMessage(this);
                 case "RABBITMQ":
                     messageMessaging = new RabbitMessage(this);
+            }
+        }
+    }
+
+    public void setupDiscord() {
+        if (getConfig().getBoolean("discord-integration.enabled", false)) {
+            if (getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
+                DiscordSRV.api.subscribe(new DiscordSRVIntegration(this));
+                LoggerUtil.log(LoggerUtil.LogType.INFO, "DiscordSRV integration enabled.");
+            }
+            if (getServer().getPluginManager().isPluginEnabled("EssentialsDiscord")) {
+                Bukkit.getPluginManager().registerEvents(new EssentialsDiscordIntegration(this), this);
             }
         }
     }

@@ -82,6 +82,13 @@ messaging:
   password: null # Not used in NATS
   rabbitmq-user: "" # RabbitMQ Only
 
+discord-integration: # Requires discordsrv or essentialsxdiscord (WARNING: Not Tested!)
+  enabled: false
+
+  # Available placeholders:
+  # sender, message, channel
+  mc-format: "<blue>Discord <reset>| %sender% > %message%"
+
 
 messages:
   reloaded: "<green>Irene Reloaded."

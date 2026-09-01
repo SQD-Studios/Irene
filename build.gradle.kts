@@ -9,7 +9,6 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
     maven {
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
@@ -17,6 +16,9 @@ repositories {
     maven {
         url = uri("https://repo.extendedclip.com/releases/")
     }
+    maven("https://nexus.scarsz.me/content/groups/public/")
+    maven("https://repo.essentialsx.net/releases/")
+    mavenCentral()
 }
 
 dependencies {
@@ -29,6 +31,12 @@ dependencies {
     // Plugin Dependencies
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
+
+    // Discord Integration
+    compileOnly("com.discordsrv:discordsrv:1.29.0")
+    compileOnly("net.essentialsx:EssentialsX:2.21.2")
+    compileOnly("net.essentialsx:EssentialsXDiscord:2.21.2")
+
 
     // Plugin Messaging
     implementation("io.lettuce:lettuce-core:7.7.0.RELEASE")
@@ -69,6 +77,7 @@ tasks {
         downloadPlugins {
             modrinth("lKEzGugV", "2.12.3")
             modrinth("Vebnzrzj", "v5.5.53-bukkit")
+            //modrinth("UmLGoGij", "1.30.5") // DiscordSRV
         }
 
         minecraftVersion("26.2")
