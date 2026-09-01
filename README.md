@@ -1,30 +1,23 @@
-# SimpleChat
-1.21 native simple chat formatting solution. Depends on LuckPerms & supports PlaceholderAPI. Group based, fast, and easy. No bloat, no lag, no fuss.
+# Irene
 
-- [Requires LuckPerms](https://luckperms.net/)
-- [Supports PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
-- [MiniMessage/Adventure](https://docs.advntr.dev/minimessage/index.html) Colors, Gradients, and Formatting
-- **Requires Paper or a fork**. Spigot will not work!
-- Configurable Event Priority (Allows you to override other plugins)
-- Unlimited Group Formats
+Irene is a chat plugin.
 
-## Config
-```yml
-formats:
-  default: "<white><bold><player_info></bold> <gray>» <white>"
-  admin: "<red><bold><player_info></bold> <gray>» <white>"
-  owner: "<rainbow><bold><player_info></bold> <gray>» <white>"
-  
-components:
-  player_info: |
-    <hover:show_text:"Nickname: %player_display_name%
-    Prefix: %prefix%
-    Suffix: %suffix%">%prefix% %name% %suffix%</hover>
+### Building
 
-priority: HIGHEST
-
-messages:
-  no_permission: "<white>Unknown command."
-  reloaded: "<green>Simple Chat Reloaded."
+Clone the repository:
+```shell
+git clone https://github.com/SQD-Studios/Irene
 ```
 
+Build it with:
+```shell
+./gradlew build
+```
+
+The finished output should be in ./build/libs/Irene-*.jar
+
+### Installing
+
+1. Download the jar from the source of your choice
+2. Add it to your plugins folder
+3. Restart your server
