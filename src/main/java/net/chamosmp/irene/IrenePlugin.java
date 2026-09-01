@@ -1,6 +1,5 @@
 package net.chamosmp.irene;
 
-import com.google.common.eventbus.Subscribe;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
@@ -9,6 +8,7 @@ import net.chamosmp.irene.commands.RespondCommandBrigadier;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
+import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.ConfigUtil;
 import net.chamosmp.irene.util.LoggerUtil;
@@ -51,9 +51,12 @@ public class IrenePlugin extends JavaPlugin {
         LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene plugin is stopping...");
         AsyncChatEvent.getHandlerList().unregister(this);
 
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "Unregistered listeners...");
+
         if (messageMessaging != null) {
             messageMessaging.closeConnection();
         }
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene has been disabled successfully.");
     }
 
     @SuppressWarnings("all")
@@ -63,13 +66,13 @@ public class IrenePlugin extends JavaPlugin {
 
             if (getConfig().getBoolean("private-message.enabled", true)) {
                 event.registrar().register(
-                        MessageCommandBrigadier.create(this),
+                        MessageCommandBrigadier.create(this, moderationUtil),
                         "",
                         getConfig().getStringList("private-message.aliases")
                 );
                 if (getConfig().getBoolean("private-message.respond.enabled", true)) {
                     event.registrar().register(
-                            RespondCommandBrigadier.create(this),
+                            RespondCommandBrigadier.create(this, moderationUtil),
                             "",
                             getConfig().getStringList("private-message.respond.aliases")
                     );
@@ -80,9 +83,11 @@ public class IrenePlugin extends JavaPlugin {
 
     public void setupPluginMessaging() {
         if (getConfig().getBoolean("messaging.enabled", false)) {
-            switch (getConfig().getString("messaging.type", "REDIS").toUpperCase()) {
+            switch (getConfig().getString("messaging.database", "REDIS").toUpperCase()) {
                 case "REDIS":
                     messageMessaging = new RedisMessage(this);
+                case "NATS":
+                    messageMessaging = new NatsMessage(this);
             }
         }
     }

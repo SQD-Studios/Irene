@@ -2,6 +2,7 @@ package net.chamosmp.irene.commands;
 
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.ModerationUtil;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
 import net.strokkur.commands.arguments.StringArg;
@@ -16,16 +17,21 @@ import java.util.Map;
 public class MessageCommand {
 
     private final IrenePlugin plugin;
+    private final ModerationUtil moderationUtil;
 
     protected Map<Player, Player> messageMap = new HashMap<>();
 
-    public MessageCommand(IrenePlugin plugin) {
+    public MessageCommand(IrenePlugin plugin, ModerationUtil moderationUtil) {
         this.plugin = plugin;
+        this.moderationUtil = moderationUtil;
     }
 
 
     @Executes
     public void execute(@Executor Player sender, Player player, @StringArg(StringArgType.GREEDY) String message) {
+        if (!moderationUtil.moderateMessage(sender, message)) {
+            return;
+        }
         if (!player.isOnline()) {
             sender.sendMessage(ColorUtil.parse(
                     sender,

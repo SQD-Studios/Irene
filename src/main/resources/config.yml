@@ -74,11 +74,11 @@ pings:
 messaging:
   enabled: false
 
-  database: REDIS # Available types: REDIS
+  database: REDIS # Available types: REDIS, NATS
 
   host: "localhost"
   port: "6379"
-  password: null
+  password: null # Not used in NATS
 
 
 messages:

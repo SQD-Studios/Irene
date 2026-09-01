@@ -30,7 +30,9 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
 
+    // Plugin Messaging
     implementation("io.lettuce:lettuce-core:7.7.0.RELEASE")
+    implementation("io.nats:jnats:2.26.2")
 }
 
 group = "net.chamosmp"

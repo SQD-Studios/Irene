@@ -101,5 +101,6 @@ public class RedisMessage implements MessageMessaging {
         async.unsubscribe("irene-redis-message:");
         connection.close();
         redisClient.close();
+        LoggerUtil.log(LoggerUtil.LogType.INFO, "Closed connection to Redis");
     }
 }

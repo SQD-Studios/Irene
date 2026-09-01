@@ -2,6 +2,7 @@ package net.chamosmp.irene.commands;
 
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.ModerationUtil;
 import net.kyori.adventure.text.Component;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
@@ -13,14 +14,19 @@ import org.bukkit.entity.Player;
 @Command("r")
 public class RespondCommand extends MessageCommand { // TODO The whole system needs fixing
     private final IrenePlugin plugin;
+    private final ModerationUtil moderationUtil;
 
-    public RespondCommand(IrenePlugin plugin) {
-        super(plugin);
+    public RespondCommand(IrenePlugin plugin, ModerationUtil moderationUtil) {
+        super(plugin, moderationUtil);
         this.plugin = plugin;
+        this.moderationUtil = moderationUtil;
     }
 
     @Executes
     public void execute(@Executor Player player, @StringArg(StringArgType.GREEDY) String message) {
+        if (!moderationUtil.moderateMessage(player, message)) {
+            return;
+        }
         Component notInAConversation = ColorUtil.parse(
                 plugin.getConfig().getString("private-message.respond.not-in-conversation", "<red>You are not in a conversation!")
         );
@@ -44,4 +50,4 @@ public class RespondCommand extends MessageCommand { // TODO The whole system ne
             player.sendMessage(notInAConversation);
         }
     }
- }
+}

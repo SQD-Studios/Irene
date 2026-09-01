@@ -7,7 +7,6 @@ import net.chamosmp.irene.adventure.IreneChatRenderer;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.ModerationUtil;
-import net.kyori.adventure.audience.Audience;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
