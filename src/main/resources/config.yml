@@ -6,22 +6,6 @@ chat-formats:
     admin: "%prefix% <bold>%name%<reset> <gray>»</gray> <red>%message%"
     owner: "%prefix%<reset> %name%<reset>%suffix%<reset> <gray>»</gray> <rainbow>%message%"
 
-moderation:
-  enabled: true
-  word-filter:
-  # TODO
-  checks:
-    limited-length:
-      length: -1 # -1 to disable
-      action:
-        block-message: true # This will block the message in chat
-
-        message: "<red>You flagged the auto mod! Reason: Your message was too long (Allowed size %a_size%, your size %p_size%)" # Allowed placeholders: %a_size% %p_size%
-
-        action: MUTE # Available: mute, kick, ban or anything else to disable it
-        duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly
-
-
 chat-heads:
   enabled: true # Should it be enabled
   type: NAME # Available options: NAME, MESSAGE. Based on what you put, it will put the chat head before it.

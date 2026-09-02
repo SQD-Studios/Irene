@@ -47,7 +47,7 @@ public class IrenePlugin extends JavaPlugin {
         this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
         this.chatMessageListener = new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil);
-        new JoinListener(this);
+        new JoinListener(this, luckPermsUtil);
 
         if (debug) {
             LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode is enabled.");

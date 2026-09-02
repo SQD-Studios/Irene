@@ -25,8 +25,8 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
     // StrokkCommands
-    compileOnly("net.strokkur.commands:annotations-paper:2.2.0")
-    annotationProcessor("net.strokkur.commands:processor-paper:2.2.0")
+    compileOnly("net.strokkur.commands:annotations-paper:2.3.0")
+    annotationProcessor("net.strokkur.commands:processor-paper:2.3.0")
 
     // Plugin Dependencies
     compileOnly("net.luckperms:api:5.5")

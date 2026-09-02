@@ -26,10 +26,9 @@ public class MessageCommand {
         this.moderationUtil = moderationUtil;
     }
 
-
     @Executes
     public void execute(@Executor Player sender, Player player, @StringArg(StringArgType.GREEDY) String message) {
-        if (!moderationUtil.moderateMessage(sender, message)) {
+        if (moderationUtil.moderateMessage(sender, message)) {
             return;
         }
         if (!player.isOnline()) {

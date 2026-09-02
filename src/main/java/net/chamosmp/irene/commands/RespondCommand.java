@@ -24,7 +24,7 @@ public class RespondCommand extends MessageCommand { // TODO The whole system ne
 
     @Executes
     public void execute(@Executor Player player, @StringArg(StringArgType.GREEDY) String message) {
-        if (!moderationUtil.moderateMessage(player, message)) {
+        if (moderationUtil.moderateMessage(player, message)) {
             return;
         }
         Component notInAConversation = ColorUtil.parse(

@@ -1,0 +1,31 @@
+moderation:
+  enabled: true
+
+  messages-prefix: "<red>You flagged the auto mod! "
+
+  word-filter: # TODO
+
+
+  checks:
+    limited-length:
+      length: -1 # -1 to disable
+      action:
+        block-message: true # This will block the message in chat
+
+        message: "Reason: Your message was too long (Allowed size %a_size%, your size %p_size%)" # Allowed placeholders: %a_size% %p_size%
+
+        action: MUTE # Available: mute, kick, ban or anything else to disable it
+        duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly
+    spam:
+      how-many-same-characters-to-flag: -1 # -1 To disable
+      time-between-message: 1 # How much should one wait to be able to chat again. -1 to disable
+      same-characters-to-flag-rest: 60 # How much time should it pass (In seconds) until they can send the same message again. -1 to need to clear the messages it gets from
+      clear-message-cache-after: 3 # How many messages after should it not count the same message as spam?
+      action:
+        block-message: true
+
+        too-quick-message: "Reason: you send a message too quickly"
+        too-similiar-message: "Reason: you send a message too similar"
+
+        action: none # Available: mute, kick, ban or anything else to disable it
+        duration: 1 # -1 makes it permanent. It's in hours. It only works when the action block above is configured correctly

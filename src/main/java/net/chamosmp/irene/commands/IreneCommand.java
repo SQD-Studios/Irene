@@ -34,6 +34,7 @@ public class IreneCommand {
         plugin.reloadConfig();
         AsyncChatEvent.getHandlerList().unregister(plugin);
         new ChatMessageListener(plugin, moderationUtil, messageMessaging, luckPermsUtil);
+        moderationUtil.reloadConfig();
         commandSender.sendMessage(ColorUtil.parse(plugin.getConfig().getString("messages.reloaded", "<green>Irene Reloaded.")));
     }
 }
