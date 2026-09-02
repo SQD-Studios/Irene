@@ -1,8 +1,11 @@
 package net.chamosmp.irene.commands;
 
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
@@ -10,16 +13,22 @@ import net.strokkur.commands.arguments.StringArg;
 import net.strokkur.commands.arguments.StringArgType;
 import net.strokkur.commands.paper.Executor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Command("r")
 public class RespondCommand extends MessageCommand { // TODO The whole system needs fixing
     private final IrenePlugin plugin;
     private final ModerationUtil moderationUtil;
 
-    public RespondCommand(IrenePlugin plugin, ModerationUtil moderationUtil) {
-        super(plugin, moderationUtil);
+    public RespondCommand(IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil) {
+        super(plugin, moderationUtil, messageMessaging, luckPermsUtil);
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
+
     }
 
     @Executes
@@ -50,4 +59,5 @@ public class RespondCommand extends MessageCommand { // TODO The whole system ne
             player.sendMessage(notInAConversation);
         }
     }
+
 }

@@ -79,16 +79,22 @@ public class IrenePlugin extends JavaPlugin {
 
             if (getConfig().getBoolean("private-message.enabled", true)) {
                 event.registrar().register(
-                        MessageCommandBrigadier.create(this, moderationUtil),
+                        MessageCommandBrigadier.create(getConfig().getString("private-message.name", "msg"),
+                                this, moderationUtil, messageMessaging, luckPermsUtil),
                         "",
                         getConfig().getStringList("private-message.aliases")
                 );
+                LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered message command");
+
+                // Respond Command
                 if (getConfig().getBoolean("private-message.respond.enabled", true)) {
                     event.registrar().register(
-                            RespondCommandBrigadier.create(this, moderationUtil),
+                            RespondCommandBrigadier.create(getConfig().getString("private-message.respond.name", "r"),
+                                    this, moderationUtil, messageMessaging, luckPermsUtil),
                             "",
                             getConfig().getStringList("private-message.respond.aliases")
                     );
+                    LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered respond command");
                 }
             }
         }));

@@ -35,7 +35,7 @@ private-message:
   allow-players-to-self-message: true
   you-cannot-message-yourself: "<red>You cannot message yourself!" # Needs the above option disabled
 
-
+  name: "msg"
   aliases:
     - w
     - message
@@ -43,6 +43,8 @@ private-message:
   respond:
     enabled: true
     not-in-conversation: "<red>You are not in a conversation!"
+
+    name: "r"
     aliases:
       - "respond"
 
