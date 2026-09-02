@@ -54,24 +54,7 @@ public class ModerationUtil {
 
     public boolean moderateMessage(Player player, String message) {
         if (isEnabled) {
-            Instant now = Instant.now();
-
-            List<String> oldList = messageMap.get(player);
-            if (oldList != null) {
-                if (oldList.size() >= checkSection.getInt("spam.clear-message-cache-after", 3)) {
-                    oldList.clear();
-                }
-
-                List<String> list = new ArrayList<>(oldList);
-
-                list.add(message);
-                messageMap.put(player, list);
-            } else {
-                messageMap.put(player, new ArrayList<>(List.of(message)));
-            }
-
-
-            return !limitedLength(player, message) || !spam(player, message, now);
+            return !limitedLength(player, message) && !spam(player, message);
         }
         return true; // It should always return true if moderation is disabled
     }
@@ -99,7 +82,7 @@ public class ModerationUtil {
         return false;
     }
 
-    public boolean spam(Player player, String message, Instant now) {
+    public boolean spam(Player player, String message) {
         ConfigurationSection spamSection = checkSection.getConfigurationSection("spam");
         if (spamSection == null) return false;
         ConfigurationSection action = spamSection.getConfigurationSection("action");
@@ -108,51 +91,73 @@ public class ModerationUtil {
         boolean spam = false;
 
         Instant oldMessageInstant = oldMessageTime.get(player.getUniqueId());
+        Instant now = Instant.now();
         if (oldMessageInstant != null) {
-
             int spamTime = spamSection.getInt("time-between-message");
 
             if (Duration.between(oldMessageInstant, now).getSeconds() < spamTime) {
-                spam = true;
+                PunishType.of(action.getString("action")).punish(player, plugin);
+
+                String punishString = action.getString("too-quick-message");
+                messagePlayer(player, punishString);
+
+                spam = action.getBoolean("block-message");
             }
             oldMessageTime.put(player.getUniqueId(), now);
         } else {
             oldMessageTime.put(player.getUniqueId(), now);
         }
 
-        if (spam) {
-            PunishType.of(action.getString("action")).punish(player, plugin);
-
-            String punishString = action.getString("too-quick-message");
-            messagePlayer(player, punishString);
-
-            spam = action.getBoolean("block-message");
-        }
-
-
         boolean tooSimilar = false;
         List<String> messageList = messageMap.get(player);
         if (messageList != null && !messageList.isEmpty()) {
-            int same = spamSection.getInt("how-many-same-characters-to-flag");
+            int sameThreshold = spamSection.getInt("how-many-same-characters-to-flag");
             String messagePunish = action.getString("too-similiar-message");
             for (String s : messageList) {
-                if (0 < same && s.equalsIgnoreCase(message)) {
-                    tooSimilar = action.getBoolean("block-message");
-                    PunishType.of(action.getString("action")).punish(player, plugin);
-                    messagePlayer(player, messagePunish);
-                    break;
-                }
-                if (0 < same && s.compareToIgnoreCase(message) >= same) {
-                    tooSimilar = action.getBoolean("block-message");
-                    PunishType.of(action.getString("action")).punish(player, plugin);
-                    messagePlayer(player, messagePunish);
-                    break;
+                if (sameThreshold > 0) {
+                    if (s.equalsIgnoreCase(message)) {
+                        tooSimilar = action.getBoolean("block-message");
+                        PunishType.of(action.getString("action")).punish(player, plugin);
+                        messagePlayer(player, messagePunish);
+                        break;
+                    }
+
+                    int commonChars = countCommonCharacters(s, message);
+                    if (commonChars >= sameThreshold) {
+                        tooSimilar = action.getBoolean("block-message");
+                        PunishType.of(action.getString("action")).punish(player, plugin);
+                        messagePlayer(player, messagePunish);
+                        break;
+                    }
                 }
             }
         }
 
+        List<String> oldList = messageMap.get(player);
+        if (oldList != null) {
+            if (oldList.size() >= checkSection.getInt("spam.clear-message-cache-after", 3)) {
+                oldList.clear();
+            }
+
+            List<String> list = new ArrayList<>(oldList);
+
+            list.add(message);
+            messageMap.put(player, list);
+        } else {
+            messageMap.put(player, new ArrayList<>(List.of(message)));
+        }
 
         return spam || tooSimilar;
+    }
+
+    private int countCommonCharacters(String s1, String s2) {
+        int[] count1 = new int[256];
+        int[] count2 = new int[256];
+        for (char c : s1.toLowerCase().toCharArray()) if (c < 256) count1[c]++;
+        for (char c : s2.toLowerCase().toCharArray()) if (c < 256) count2[c]++;
+        int common = 0;
+        for (int i = 0; i < 256; i++) common += Math.min(count1[i], count2[i]);
+        return common;
     }
 
     private void messagePlayer(@NotNull Player player, @Nullable String message) {
