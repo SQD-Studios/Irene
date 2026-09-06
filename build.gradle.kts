@@ -5,12 +5,17 @@
 plugins {
     id("java")
     id("maven-publish")
+    id("com.gradleup.shadow") version "9.6.1"
     id("xyz.jpenilla.run-paper") version "3.1.0"
 }
 
 repositories {
     maven {
         url = uri("https://repo.papermc.io/repository/maven-public/")
+    }
+    maven {
+        name = "chamosmpRepoReleases"
+        url = uri("https://maven.chamosmp.net/releases")
     }
     maven("https://eldonexus.de/repository/maven-public/")
     maven {
@@ -23,6 +28,8 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+
+    implementation("net.chamosmp.sqdlib:sqd-lib:1.1.3")
 
     // StrokkCommands
     compileOnly("net.strokkur.commands:annotations-paper:2.3.0")
@@ -39,12 +46,12 @@ dependencies {
 
 
     // Plugin Messaging
-    implementation("io.lettuce:lettuce-core:7.7.0.RELEASE")
-    implementation("io.nats:jnats:2.26.2")
-    implementation("com.rabbitmq:amqp-client:5.35.0")
+    compileOnly("io.lettuce:lettuce-core:7.7.0.RELEASE")
+    compileOnly("io.nats:jnats:2.26.2")
+    compileOnly("com.rabbitmq:amqp-client:5.35.0")
 }
 
-group = "net.chamosmp"
+group = "net.chamosmp.irene"
 version = "1.0.0"
 description = "Irene, is a chat plugin, which extends to chat moderation, and linking chats between servers"
 java.sourceCompatibility = JavaVersion.VERSION_25
@@ -56,6 +63,12 @@ publishing {
 }
 
 tasks {
+    shadowJar {
+        configurations = project.configurations.runtimeClasspath.map { setOf(it) }
+
+        relocate("net.chamosmp.sqdlib", "net.chamosmp.irene.libs")
+    }
+
     withType<JavaCompile> {
         options.encoding = "UTF-8"
     }

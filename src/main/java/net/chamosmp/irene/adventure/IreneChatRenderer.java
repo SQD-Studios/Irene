@@ -3,17 +3,14 @@ package net.chamosmp.irene.adventure;
 import io.papermc.paper.chat.ChatRenderer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ColorUtil;
-import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
+import net.chamosmp.sqdlib.util.ColorUtil;
+import net.chamosmp.sqdlib.util.LoggerUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -131,7 +128,7 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
-            message = ColorUtil.parse(ColorUtil.emojiPlaceholder(
+            message = ColorUtil.parse(emojiPlaceholder(
                     ColorUtil.deParse(message),
                     plugin.getConfig().getString("emojis.character", ":"),
                     plugin.getConfig().getBoolean("emojis.items"),
@@ -220,6 +217,39 @@ public class IreneChatRenderer implements ChatRenderer {
                 player.stopSound(sound);
                 player.playSound(player, sound, volume, pitch);
             }, null);
+        }
+        return result;
+    }
+
+    public static @NotNull String emojiPlaceholder(@NotNull String message, @NotNull String emojiCharacter, boolean playerHeads, boolean items) {
+        if (message.contains(emojiCharacter)) {
+            for (int i = message.indexOf(emojiCharacter); message.indexOf(emojiCharacter, i) != -1; i++) {
+                int second = message.indexOf(emojiCharacter, i + 1);
+                if (i == -1 || second == -1) return message;
+
+                String key = message.substring(i + 1, second);
+                message = message.replace(emojiCharacter + key + emojiCharacter, keyEmojiPlaceholder(key, emojiCharacter, playerHeads, items));
+            }
+            return message;
+        }
+
+        return message;
+    }
+
+    private static @NotNull String keyEmojiPlaceholder(@NotNull String key, @NotNull String emojiChar, boolean playerHeads, boolean items) {
+        String result = emojiChar + key + emojiChar;
+        Material material = Material.getMaterial(key.toUpperCase());
+        if (material != null && items) {
+            if (material.isBlock()) {
+                result = "<white><sprite:blocks:block/" + key + "></white>";
+            } else if (material.isItem()) {
+                result = "<white><sprite:items:item/" + key + "></white>";
+            }
+        } else {
+            Player player = Bukkit.getPlayerExact(key);
+            if (player != null && playerHeads) {
+                result = "<white><head:" + player.getUniqueId() + "></white>";
+            }
         }
         return result;
     }

@@ -15,10 +15,11 @@ import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
-import net.chamosmp.irene.util.ConfigUtil;
-import net.chamosmp.irene.util.LoggerUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import net.chamosmp.sqdlib.exceptions.CommandRegisterException;
+import net.chamosmp.sqdlib.util.ConfigUtil;
+import net.chamosmp.sqdlib.util.LoggerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -28,13 +29,15 @@ public class IrenePlugin extends JavaPlugin {
     private DebugListener debugListener;
     private ChatMessageListener chatMessageListener;
     private ModerationUtil moderationUtil;
-    private @Nullable MessageMessaging messageMessaging;
+    private @Nullable MessageMessaging messageMessaging = null;
     private LuckPermsUtil luckPermsUtil;
 
     public boolean debug = getConfig().getBoolean("debug", false);
 
     @Override
     public void onEnable() {
+        new LoggerUtil("<red>Irene</red>| ");
+
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();
         }
@@ -75,27 +78,31 @@ public class IrenePlugin extends JavaPlugin {
     @SuppressWarnings("all")
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
-            IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil); // We know the parameter may be null
+            try {
+                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil); // We know the parameter may be null
 
-            if (getConfig().getBoolean("private-message.enabled", true)) {
-                event.registrar().register(
-                        MessageCommandBrigadier.create(getConfig().getString("private-message.name", "msg"),
-                                this, moderationUtil, messageMessaging, luckPermsUtil),
-                        "",
-                        getConfig().getStringList("private-message.aliases")
-                );
-                LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered message command");
-
-                // Respond Command
-                if (getConfig().getBoolean("private-message.respond.enabled", true)) {
+                if (getConfig().getBoolean("private-message.enabled", true)) {
                     event.registrar().register(
-                            RespondCommandBrigadier.create(getConfig().getString("private-message.respond.name", "r"),
+                            MessageCommandBrigadier.create(getConfig().getString("private-message.name", "msg"),
                                     this, moderationUtil, messageMessaging, luckPermsUtil),
                             "",
-                            getConfig().getStringList("private-message.respond.aliases")
+                            getConfig().getStringList("private-message.aliases")
                     );
-                    LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered respond command");
+                    LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered message command");
+
+                    // Respond Command
+                    if (getConfig().getBoolean("private-message.respond.enabled", true)) {
+                        event.registrar().register(
+                                RespondCommandBrigadier.create(getConfig().getString("private-message.respond.name", "r"),
+                                        this, moderationUtil, messageMessaging, luckPermsUtil),
+                                "",
+                                getConfig().getStringList("private-message.respond.aliases")
+                        );
+                        LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered respond command");
+                    }
                 }
+            } catch (Exception e) {
+                throw new CommandRegisterException("Failed to register the commands!", e);
             }
         }));
     }

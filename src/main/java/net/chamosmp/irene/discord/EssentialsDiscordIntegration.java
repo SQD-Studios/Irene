@@ -1,7 +1,7 @@
 package net.chamosmp.irene.discord;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ColorUtil;
+import net.chamosmp.sqdlib.util.ColorUtil;
 import net.essentialsx.api.v2.events.discord.DiscordRelayEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;

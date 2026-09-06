@@ -1,8 +1,8 @@
 package net.chamosmp.irene.listeners;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ColorUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
+import net.chamosmp.sqdlib.util.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;

@@ -2,7 +2,7 @@ package net.chamosmp.irene.listeners;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LoggerUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

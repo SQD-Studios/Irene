@@ -5,8 +5,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ColorUtil;
-import net.chamosmp.irene.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.ColorUtil;
+import net.chamosmp.sqdlib.util.LoggerUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -91,7 +91,8 @@ public class RabbitMessage implements MessageMessaging {
                     Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(stringMessage)));
                 }
             };
-            channel.basicConsume(queueName, true, deliverCallback, _ -> {});
+            channel.basicConsume(queueName, true, deliverCallback, _ -> {
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }

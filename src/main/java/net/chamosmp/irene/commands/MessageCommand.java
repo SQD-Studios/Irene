@@ -1,11 +1,10 @@
 package net.chamosmp.irene.commands;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.commands.suggestions.PlayerSuggestion;
 import net.chamosmp.irene.messaging.MessageMessaging;
-import net.chamosmp.irene.util.ColorUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
+import net.chamosmp.sqdlib.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.strokkur.commands.Command;
@@ -21,25 +20,28 @@ import java.util.List;
 import java.util.Map;
 
 @Command("msg")
-public class MessageCommand extends IreneCommand {
+public class MessageCommand {
 
     private final IrenePlugin plugin;
     private final ModerationUtil moderationUtil;
 
     protected Map<Player, Player> messageMap = new HashMap<>();
 
+    private final IreneCommand subcommand;
+
     public MessageCommand(IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messaging, LuckPermsUtil luckPermsUtil) {
-        super(plugin, moderationUtil, messaging, luckPermsUtil);
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
+
+        this.subcommand = new IreneCommand(plugin, moderationUtil, messaging, luckPermsUtil);
 
     }
 
     @Executes
-    public void execute(@Executor Player sender, @PlayerSuggestion Player player, @StringArg(StringArgType.GREEDY) String message) {
-        if (moderationUtil.moderateMessage(sender, message)) {
-            return;
-        }
+    public void execute(@Executor Player sender, Player player, @StringArg(StringArgType.GREEDY) String message) {
+        //if (moderationUtil.moderateMessage(sender, message)) {
+        //    return;
+        //}
         if (!player.isOnline()) {
             sender.sendMessage(ColorUtil.parse(
                     sender,
@@ -79,9 +81,9 @@ public class MessageCommand extends IreneCommand {
                 format,
                 placeholders
         ));
-        sendMessageToSpies(getSpies(), ColorUtil.parse(
+        sendMessageToSpies(subcommand.getSpies(), ColorUtil.parse(
                 receiver,
-                format,
+                "<red>ISPY| <reset>" + format,
                 placeholders
         ));
     }

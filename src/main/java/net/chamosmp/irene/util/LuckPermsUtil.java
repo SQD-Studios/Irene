@@ -1,5 +1,7 @@
 package net.chamosmp.irene.util;
 
+import net.chamosmp.sqdlib.exceptions.PluginNotFoundException;
+import net.chamosmp.sqdlib.util.LoggerUtil;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
 import org.bukkit.entity.Player;
@@ -29,7 +31,7 @@ public class LuckPermsUtil {
         luckPerms = (luckPermsProvider != null) ? luckPermsProvider.getProvider() : null;
         if (luckPerms == null) {
             LoggerUtil.log(LoggerUtil.LogType.SEVERE, "LuckPerms is not available! Irene will not function properly.");
-            throw new IllegalStateException("LuckPerms is required for Irene to function.");
+            throw new PluginNotFoundException("Irene needs LuckPerms to function! This may (And is) an api mistake from LuckPerms");
         }
         LoggerUtil.log(LoggerUtil.LogType.INFO, "LuckPerms found, using it for chat formatting.");
     }
