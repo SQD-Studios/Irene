@@ -66,7 +66,7 @@ tasks {
     shadowJar {
         configurations = project.configurations.runtimeClasspath.map { setOf(it) }
 
-        relocate("net.chamosmp.sqdlib", "net.chamosmp.irene.libs")
+        relocate("net.chamosmp.sqdlib", "net.chamosmp.irene.libs.sqdlib")
     }
 
     withType<JavaCompile> {
