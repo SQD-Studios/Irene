@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
-    implementation("net.chamosmp.sqdlib:sqd-lib:1.1.3")
+    implementation("net.chamosmp.sqdlib:sqdlib-paper:2.0.0")
 
     // StrokkCommands
     compileOnly("net.strokkur.commands:annotations-paper:2.3.0")

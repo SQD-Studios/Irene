@@ -6,8 +6,9 @@ import io.lettuce.core.pubsub.RedisPubSubAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.sqdlib.util.ColorUtil;
-import net.chamosmp.sqdlib.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,7 +51,7 @@ public class RedisMessage implements MessageMessaging {
             }
             this.connection = redisClient.connectPubSub();
 
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Connected to Redis");
+            LoggerUtil.log(LogType.INFO, "Connected to Redis");
 
             onMessage();
 
@@ -59,7 +60,7 @@ public class RedisMessage implements MessageMessaging {
             RedisFuture<Void> subscribeAsync =
                     async.subscribe(CHANNEL_NAME);
             subscribeAsync.thenAccept(_ -> {
-                LoggerUtil.log(LoggerUtil.LogType.INFO, "Successfully subscribed to the Redis Channels");
+                LoggerUtil.log(LogType.INFO, "Successfully subscribed to the Redis Channels");
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,6 +106,6 @@ public class RedisMessage implements MessageMessaging {
         async.unsubscribe(CHANNEL_NAME);
         connection.close();
         redisClient.close();
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Closed connection to Redis");
+        LoggerUtil.log(LogType.INFO, "Closed connection to Redis");
     }
 }

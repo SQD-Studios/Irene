@@ -6,7 +6,7 @@ import github.scarsz.discordsrv.api.events.DiscordGuildMessagePostProcessEvent;
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.Component;
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.minimessage.MiniMessage;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.sqdlib.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
 
 import java.util.HashMap;
 import java.util.Map;

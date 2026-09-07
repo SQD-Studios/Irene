@@ -5,8 +5,9 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.sqdlib.util.ColorUtil;
-import net.chamosmp.sqdlib.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -57,7 +58,7 @@ public class RabbitMessage implements MessageMessaging {
             channel = connection.createChannel();
             channel.exchangeDeclare(CHANNEL_NAME, "fanout");
 
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Connected to RabbitMQ");
+            LoggerUtil.log(LogType.INFO, "Connected to RabbitMQ");
 
             onMessage();
         } catch (Exception e) {
@@ -119,7 +120,7 @@ public class RabbitMessage implements MessageMessaging {
     public void closeConnection() {
         try {
             connection.close();
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Closed connection to RabbitMQ");
+            LoggerUtil.log(LogType.INFO, "Closed connection to RabbitMQ");
         } catch (Exception e) {
             e.printStackTrace();
         }

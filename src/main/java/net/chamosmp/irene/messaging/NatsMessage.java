@@ -4,8 +4,9 @@ import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Nats;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.sqdlib.util.ColorUtil;
-import net.chamosmp.sqdlib.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -43,7 +44,7 @@ public class NatsMessage implements MessageMessaging {
 
             connection = Nats.connect("nats://" + host + ":" + port);
 
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Connected to NATS");
+            LoggerUtil.log(LogType.INFO, "Connected to NATS");
 
             onMessage();
         } catch (IOException | InterruptedException e) {
@@ -69,7 +70,7 @@ public class NatsMessage implements MessageMessaging {
             }
         });
         d.subscribe(CHANNEL_NAME);
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Successfully subscribed to the NATS Channels");
+        LoggerUtil.log(LogType.INFO, "Successfully subscribed to the NATS Channels");
     }
 
     @Override
@@ -93,7 +94,7 @@ public class NatsMessage implements MessageMessaging {
     public void closeConnection() {
         try {
             connection.close();
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Closed connection to NATS");
+            LoggerUtil.log(LogType.INFO, "Closed connection to NATS");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

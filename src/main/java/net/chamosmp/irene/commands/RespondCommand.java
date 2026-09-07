@@ -4,7 +4,7 @@ import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
-import net.chamosmp.sqdlib.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.text.Component;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;

@@ -6,7 +6,7 @@ import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
-import net.chamosmp.sqdlib.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
 import net.strokkur.commands.Executes;
 import net.strokkur.commands.permission.Permission;

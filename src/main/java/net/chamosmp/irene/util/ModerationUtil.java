@@ -1,8 +1,8 @@
 package net.chamosmp.irene.util;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.sqdlib.util.ColorUtil;
-import net.chamosmp.sqdlib.util.ConfigUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.ConfigUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

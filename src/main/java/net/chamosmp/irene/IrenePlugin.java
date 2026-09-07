@@ -18,8 +18,9 @@ import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.exceptions.CommandRegisterException;
-import net.chamosmp.sqdlib.util.ConfigUtil;
-import net.chamosmp.sqdlib.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.ConfigUtil;
+import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LogType;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -53,26 +54,26 @@ public class IrenePlugin extends JavaPlugin {
         new JoinListener(this, luckPermsUtil);
 
         if (debug) {
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "Debug mode is enabled.");
+            LoggerUtil.log(LogType.INFO, "Debug mode is enabled.");
             this.debugListener = new DebugListener(this);
         }
 
         setupDiscord();
 
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene is waiting for chat events...");
+        LoggerUtil.log(LogType.INFO, "Irene is waiting for chat events...");
     }
 
     @Override
     public void onDisable() {
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene plugin is stopping...");
+        LoggerUtil.log(LogType.INFO, "Irene plugin is stopping...");
         AsyncChatEvent.getHandlerList().unregister(this);
 
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Unregistered listeners...");
+        LoggerUtil.log(LogType.INFO, "Unregistered listeners...");
 
         if (messageMessaging != null) {
             messageMessaging.closeConnection();
         }
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Irene has been disabled successfully.");
+        LoggerUtil.log(LogType.INFO, "Irene has been disabled successfully.");
     }
 
     @SuppressWarnings("all")
@@ -88,7 +89,7 @@ public class IrenePlugin extends JavaPlugin {
                             "",
                             getConfig().getStringList("private-message.aliases")
                     );
-                    LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered message command");
+                    LoggerUtil.log(LogType.INFO, "Registered message command");
 
                     // Respond Command
                     if (getConfig().getBoolean("private-message.respond.enabled", true)) {
@@ -98,7 +99,7 @@ public class IrenePlugin extends JavaPlugin {
                                 "",
                                 getConfig().getStringList("private-message.respond.aliases")
                         );
-                        LoggerUtil.log(LoggerUtil.LogType.INFO, "Registered respond command");
+                        LoggerUtil.log(LogType.INFO, "Registered respond command");
                     }
                 }
             } catch (Exception e) {
@@ -124,7 +125,7 @@ public class IrenePlugin extends JavaPlugin {
         if (getConfig().getBoolean("discord-integration.enabled", false)) {
             if (getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
                 DiscordSRV.api.subscribe(new DiscordSRVIntegration(this));
-                LoggerUtil.log(LoggerUtil.LogType.INFO, "DiscordSRV integration enabled.");
+                LoggerUtil.log(LogType.INFO, "DiscordSRV integration enabled.");
             }
             if (getServer().getPluginManager().isPluginEnabled("EssentialsDiscord")) {
                 Bukkit.getPluginManager().registerEvents(new EssentialsDiscordIntegration(this), this);

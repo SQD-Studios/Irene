@@ -4,8 +4,9 @@ import io.papermc.paper.chat.ChatRenderer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.util.LuckPermsUtil;
-import net.chamosmp.sqdlib.util.ColorUtil;
-import net.chamosmp.sqdlib.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
+import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -39,14 +40,14 @@ public class IreneChatRenderer implements ChatRenderer {
 
         // Setup PlaceholderAPI
         if (IS_PAPI_ENABLED) {
-            LoggerUtil.log(LoggerUtil.LogType.INFO, "PlaceholderAPI found, placeholders will be processed in message format.");
+            LoggerUtil.log(LogType.INFO, "PlaceholderAPI found, placeholders will be processed in message format.");
         } else {
-            LoggerUtil.log(LoggerUtil.LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed in message format.");
+            LoggerUtil.log(LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed in message format.");
         }
 
         // Make sure the config has at least one format defined
         if (!plugin.getConfig().isConfigurationSection("chat-formats.formats")) {
-            LoggerUtil.log(LoggerUtil.LogType.WARNING, "No chat formats found in config! Please define at least a 'default' format.");
+            LoggerUtil.log(LogType.WARNING, "No chat formats found in config! Please define at least a 'default' format.");
             throw new IllegalStateException("Chat formats are not defined in the config.");
         }
 
@@ -68,7 +69,7 @@ public class IreneChatRenderer implements ChatRenderer {
             }
         });
 
-        LoggerUtil.log(LoggerUtil.LogType.INFO, "Loaded " + formats.size() + " chat formats from config.");
+        LoggerUtil.log(LogType.INFO, "Loaded " + formats.size() + " chat formats from config.");
     }
 
     @Override
@@ -81,13 +82,13 @@ public class IreneChatRenderer implements ChatRenderer {
 
         final String formatKey = luckPermsUtil.getPrimaryGroup(source);
         if (formatKey == null || formatKey.isEmpty()) {
-            LoggerUtil.log(LoggerUtil.LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
+            LoggerUtil.log(LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
             return Component.empty();
         }
 
         Component format = formats.getOrDefault(formatKey, formats.get("default"));
         if (format == null) {
-            LoggerUtil.log(LoggerUtil.LogType.WARNING, "Config does not contain a format for group " + formatKey + " and/or no \"default\" format is set.");
+            LoggerUtil.log(LogType.WARNING, "Config does not contain a format for group " + formatKey + " and/or no \"default\" format is set.");
             return Component.empty();
         }
         String stringFormat = ColorUtil.deParse(format);
