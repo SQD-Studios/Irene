@@ -102,9 +102,9 @@ public class IreneChatRenderer implements ChatRenderer {
         if (plugin.getConfig().getBoolean("chat-heads.enabled")) {
             String type = plugin.getConfig().getString("chat-heads.type", "").toLowerCase();
             if ("message".equals(type)) {
-                stringFormat = "<head:" + source.getUniqueId() + ">" + stringFormat;
+                stringFormat = "<head:" + source.getName() + ">" + stringFormat;
             } else if ("name".equals(type)) {
-                stringFormat = stringFormat.replace(source.getName(), "<head:" + source.getUniqueId() + ">" + source.getName());
+                stringFormat = stringFormat.replace(source.getName(), "<head:" + source.getName() + ">" + source.getName());
             }
         }
 
@@ -163,7 +163,7 @@ public class IreneChatRenderer implements ChatRenderer {
         if (plugin.getConfig().getBoolean("chat-formats.enabled")) {
             return ColorUtil.parse(source, stringFormat, placeholders);
         } else if (plugin.getConfig().getBoolean("chat-heads")) {
-            return ColorUtil.parse("<head:" + source.getUniqueId() + ">").append(message);
+            return ColorUtil.parse("<head:" + source.getName() + ">").append(message);
         } else {
             return message;
         }
@@ -249,7 +249,7 @@ public class IreneChatRenderer implements ChatRenderer {
         } else {
             Player player = Bukkit.getPlayerExact(key);
             if (player != null && playerHeads) {
-                result = "<white><head:" + player.getUniqueId() + "></white>";
+                result = "<white><head:" + player.getName() + "></white>";
             }
         }
         return result;
