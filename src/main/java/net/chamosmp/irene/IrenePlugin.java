@@ -4,8 +4,9 @@ import github.scarsz.discordsrv.DiscordSRV;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
-import net.chamosmp.irene.commands.MessageCommandBrigadier;
-import net.chamosmp.irene.commands.RespondCommandBrigadier;
+import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
+import net.chamosmp.irene.commands.message.MessageCommandManager;
+import net.chamosmp.irene.commands.message.RespondCommandBrigadier;
 import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
@@ -80,12 +81,17 @@ public class IrenePlugin extends JavaPlugin {
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
             try {
-                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil); // We know the parameter may be null
+                MessageCommandManager manager = new MessageCommandManager(this);
+                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager); // We know the parameter may be null
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {
                     event.registrar().register(
-                            MessageCommandBrigadier.create(getConfig().getString("private-message.name", "msg"),
-                                    this, moderationUtil, messageMessaging, luckPermsUtil),
+                            MessageCommandBrigadier.create(
+                                    getConfig().getString("private-message.name", "msg"),
+                                    this,
+                                    moderationUtil,
+                                    manager
+                            ),
                             "",
                             getConfig().getStringList("private-message.aliases")
                     );
@@ -94,8 +100,12 @@ public class IrenePlugin extends JavaPlugin {
                     // Respond Command
                     if (getConfig().getBoolean("private-message.respond.enabled", true)) {
                         event.registrar().register(
-                                RespondCommandBrigadier.create(getConfig().getString("private-message.respond.name", "r"),
-                                        this, moderationUtil, messageMessaging, luckPermsUtil),
+                                RespondCommandBrigadier.create(
+                                        getConfig().getString("private-message.respond.name", "r"),
+                                        this,
+                                        moderationUtil,
+                                        manager
+                                ),
                                 "",
                                 getConfig().getStringList("private-message.respond.aliases")
                         );

@@ -1,57 +1,27 @@
-package net.chamosmp.irene.commands;
+package net.chamosmp.irene.commands.message;
 
-import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.messaging.MessageMessaging;
-import net.chamosmp.irene.util.LuckPermsUtil;
-import net.chamosmp.irene.util.ModerationUtil;
+import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.strokkur.commands.Command;
-import net.strokkur.commands.Executes;
-import net.strokkur.commands.arguments.StringArg;
-import net.strokkur.commands.arguments.StringArgType;
-import net.strokkur.commands.paper.Executor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Command("msg")
-public class MessageCommand {
+public class MessageCommandManager {
 
-    private final IrenePlugin plugin;
-    private final ModerationUtil moderationUtil;
+    private final Plugin plugin;
 
-    protected Map<Player, Player> messageMap = new HashMap<>();
+    public DoubleValueList<Player, Player> messageMap = DoubleValueList.of();
 
-    private final IreneCommand subcommand;
+    public final List<Audience> spies = new ArrayList<>();
 
-    public MessageCommand(IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messaging, LuckPermsUtil luckPermsUtil) {
+    public MessageCommandManager(Plugin plugin) {
         this.plugin = plugin;
-        this.moderationUtil = moderationUtil;
-
-        this.subcommand = new IreneCommand(plugin, moderationUtil, messaging, luckPermsUtil);
-
-    }
-
-    @Executes
-    public void execute(@Executor Player sender, Player player, @StringArg(StringArgType.GREEDY) String message) {
-        //if (moderationUtil.moderateMessage(sender, message)) {
-        //    return;
-        //}
-        if (!player.isOnline()) {
-            sender.sendMessage(ColorUtil.parse(
-                    sender,
-                    plugin.getConfig().getString("private-message.player-not-online", "<gray>%player% is not online"),
-                    Map.of("player", player.getName())
-            ));
-        }
-        checkMapAndFix(player, sender);
-        sendMessage(player, sender, message);
-        messageMap.put(player, sender);
     }
 
     public void sendMessage(Player receiver, Player sender, String message) {
@@ -81,9 +51,9 @@ public class MessageCommand {
                 format,
                 placeholders
         ));
-        sendMessageToSpies(subcommand.getSpies(), ColorUtil.parse(
+        sendMessageToSpies(spies, ColorUtil.parse(
                 receiver,
-                "<red>ISPY| <reset>" + format,
+                "<red><b>ISPY<reset>| " + format,
                 placeholders
         ));
     }
@@ -106,19 +76,5 @@ public class MessageCommand {
                 return false;
             }
         }
-    }
-
-    private void checkMapAndFix(Player receiver, Player sender) {
-        Player key = messageMap.containsKey(receiver) ? receiver : messageMap.containsKey(sender) ? sender : null;
-        if (key == null) return;
-
-        Player value = messageMap.get(key);
-        if (value != sender || value != receiver) {
-            messageMap.remove(key);
-        }
-    }
-
-    public Map<Player, Player> getMessageMap() {
-        return messageMap;
     }
 }
