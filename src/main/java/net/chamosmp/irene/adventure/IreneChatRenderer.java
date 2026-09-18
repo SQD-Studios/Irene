@@ -8,10 +8,14 @@ import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
 import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Registry;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -40,9 +44,9 @@ public class IreneChatRenderer implements ChatRenderer {
 
         // Setup PlaceholderAPI
         if (IS_PAPI_ENABLED) {
-            LoggerUtil.log(LogType.INFO, "PlaceholderAPI found, placeholders will be processed in message format.");
+            LoggerUtil.log(LogType.INFO, "PlaceholderAPI found, placeholders will be processed");
         } else {
-            LoggerUtil.log(LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed in message format.");
+            LoggerUtil.log(LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed");
         }
 
         // Make sure the config has at least one format defined
@@ -51,19 +55,8 @@ public class IreneChatRenderer implements ChatRenderer {
             throw new IllegalStateException("Chat formats are not defined in the config.");
         }
 
-        Map<String, String> components = new HashMap<>();
-        if (plugin.getConfig().isConfigurationSection("components")) {
-            plugin.getConfig().getConfigurationSection("components").getKeys(false).forEach(key -> {
-                String componentString = plugin.getConfig().getString("components." + key).trim();
-                components.put(key, componentString);
-            });
-        }
-
         plugin.getConfig().getConfigurationSection("chat-formats.formats").getKeys(false).forEach(key -> {
             String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
-            for (Map.Entry<String, String> component : components.entrySet()) {
-                formatString = formatString.replace("<" + component.getKey() + ">", component.getValue());
-            }
             if (formatString != null) {
                 formats.put(key, ColorUtil.parse(formatString));
             }
@@ -170,10 +163,10 @@ public class IreneChatRenderer implements ChatRenderer {
     }
 
     public @NotNull String pingCheck(@NotNull String message, @NotNull String pingChar) {
-        FileConfiguration config = plugin.getConfig();
+        final FileConfiguration config = plugin.getConfig();
 
-        String stringSound = config.getString("pings.sound.name", "NOTE_BLOCK_BANJO").toLowerCase();
-        Sound sound = Registry.SOUND_EVENT.get(new NamespacedKey("minecraft", stringSound));
+        final String stringSound = config.getString("pings.sound.name", "NOTE_BLOCK_BANJO").toLowerCase();
+        Sound sound = Registry.SOUND_EVENT.get(Key.key(stringSound));
         if (sound == null) { // TODO Doesn't really work so it always falls back here
             sound = Sound.BLOCK_NOTE_BLOCK_BIT;
         }

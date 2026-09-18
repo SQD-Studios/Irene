@@ -29,3 +29,7 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+    LiteBans:
+      load: BEFORE
+      required: false
+      join-classpath: true

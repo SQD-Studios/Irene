@@ -81,7 +81,7 @@ public class IrenePlugin extends JavaPlugin {
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
             try {
-                MessageCommandManager manager = new MessageCommandManager(this);
+                MessageCommandManager manager = new MessageCommandManager(this, moderationUtil);
                 IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager); // We know the parameter may be null
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {

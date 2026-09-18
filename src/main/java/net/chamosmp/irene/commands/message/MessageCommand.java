@@ -1,7 +1,6 @@
 package net.chamosmp.irene.commands.message;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.lang.value.DoubleValue;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.strokkur.commands.Command;
@@ -17,14 +16,12 @@ import java.util.Map;
 public class MessageCommand {
 
     private final IrenePlugin plugin;
-    private final ModerationUtil moderationUtil;
 
 
     private final MessageCommandManager storage;
 
-    public MessageCommand(IrenePlugin plugin, ModerationUtil moderationUtil, MessageCommandManager storage) {
+    public MessageCommand(IrenePlugin plugin, MessageCommandManager storage) {
         this.plugin = plugin;
-        this.moderationUtil = moderationUtil;
 
         this.storage = storage;
     }

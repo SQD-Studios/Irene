@@ -6,6 +6,16 @@ chat-formats:
     admin: "%prefix% <bold>%name%<reset> <gray>»</gray> <red>%message%"
     owner: "%prefix%<reset> %name%<reset>%suffix%<reset> <gray>»</gray> <rainbow>%message%"
 
+  hover:
+    default: # Which group it is.
+      click-command: "msg %player%" # Without the starting /. You can use the player placeholder
+
+      message: |
+        <aqua>%player%'s Profile
+        <reset>
+        <light_purple>Click to message this player
+        
+
 chat-heads:
   enabled: true # Should it be enabled
   type: NAME # Available options: NAME, MESSAGE. Based on what you put, it will put the chat head before it.

@@ -1,5 +1,6 @@
 package net.chamosmp.irene.commands.message;
 
+import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
@@ -15,13 +16,15 @@ import java.util.Map;
 public class MessageCommandManager {
 
     private final Plugin plugin;
+    private final ModerationUtil moderationUtil;
 
     public DoubleValueList<Player, Player> messageMap = DoubleValueList.of();
 
     public final List<Audience> spies = new ArrayList<>();
 
-    public MessageCommandManager(Plugin plugin) {
+    public MessageCommandManager(Plugin plugin, ModerationUtil moderationUtil) {
         this.plugin = plugin;
+        this.moderationUtil = moderationUtil;
     }
 
     public void sendMessage(Player receiver, Player sender, String message) {

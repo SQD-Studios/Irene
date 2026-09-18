@@ -1,7 +1,6 @@
 package net.chamosmp.irene.commands.message;
 
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
@@ -17,13 +16,11 @@ import org.bukkit.entity.Player;
 @Command("r")
 public class RespondCommand {
     private final IrenePlugin plugin;
-    private final ModerationUtil moderationUtil;
 
     private final MessageCommandManager storage;
 
-    public RespondCommand(IrenePlugin plugin, ModerationUtil moderationUtil, MessageCommandManager storage) {
+    public RespondCommand(IrenePlugin plugin, MessageCommandManager storage) {
         this.plugin = plugin;
-        this.moderationUtil = moderationUtil;
 
         this.storage = storage;
     }

@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ModerationUtil {
 
@@ -28,6 +29,8 @@ public class ModerationUtil {
      */
     private ConfigurationSection checkSection;
 
+    private YamlConfiguration config;
+
     /**
      * The prefix for all messages
      */
@@ -36,6 +39,8 @@ public class ModerationUtil {
 
     private final IrenePlugin plugin;
 
+    private final static boolean IS_LITEBANS = Bukkit.getPluginManager().isPluginEnabled("LiteBans");
+
     // Used for "spam protection"
     private final Map<UUID, Instant> oldMessageTime = new HashMap<>();
 
@@ -43,11 +48,11 @@ public class ModerationUtil {
 
     public ModerationUtil(IrenePlugin plugin) {
         this.plugin = plugin;
-        YamlConfiguration moderationConfig = ConfigUtil.loadDataFile(plugin, "moderation.yml");
+        config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
 
-        this.isEnabled = moderationConfig.getBoolean("moderation.enabled", false);
-        this.checkSection = moderationConfig.getConfigurationSection("moderation.checks");
-        this.messagePrefix = moderationConfig.getString("moderation.messages-prefix", "");
+        this.isEnabled = config.getBoolean("moderation.enabled", false);
+        this.checkSection = config.getConfigurationSection("moderation.checks");
+        this.messagePrefix = config.getString("moderation.messages-prefix", "");
     }
 
     public boolean moderateMessage(Player player, Component message) {
@@ -73,7 +78,7 @@ public class ModerationUtil {
         if (message.length() > length) {
             ConfigurationSection action = limitedLength.getConfigurationSection("action");
             if (action == null) return false;
-            PunishType.of(action.getString("action")).punish(player, plugin);
+            PunishType.of(action.getString("action")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
 
             String punishString = action.getString("message");
             if (punishString != null) {
@@ -98,7 +103,7 @@ public class ModerationUtil {
             int spamTime = spamSection.getInt("time-between-message");
 
             if (Duration.between(oldMessageInstant, now).getSeconds() < spamTime) {
-                PunishType.of(action.getString("action")).punish(player, plugin);
+                PunishType.of(action.getString("action")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
 
                 String punishString = action.getString("too-quick-message");
                 messagePlayer(player, punishString);
@@ -119,7 +124,7 @@ public class ModerationUtil {
                 if (sameThreshold > 0) {
                     if (s.equalsIgnoreCase(message)) {
                         tooSimilar = action.getBoolean("block-message");
-                        PunishType.of(action.getString("action")).punish(player, plugin);
+                        PunishType.of(action.getString("action")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
                         messagePlayer(player, messagePunish);
                         break;
                     }
@@ -127,7 +132,7 @@ public class ModerationUtil {
                     int commonChars = countCommonCharacters(s, message);
                     if (commonChars >= sameThreshold) {
                         tooSimilar = action.getBoolean("block-message");
-                        PunishType.of(action.getString("action")).punish(player, plugin);
+                        PunishType.of(action.getString("action")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
                         messagePlayer(player, messagePunish);
                         break;
                     }
@@ -150,6 +155,23 @@ public class ModerationUtil {
         }
 
         return spam || tooSimilar;
+    }
+
+    public boolean worldFilter(Player player, String message) {
+        ConfigurationSection worldFilterSection = config.getConfigurationSection("world-filter");
+        if (worldFilterSection == null) return true;
+
+        AtomicBoolean passes = new AtomicBoolean(true);
+        worldFilterSection.getKeys(false).forEach(key -> {
+
+        });
+
+        if (!passes.get()) {
+            ConfigurationSection action = worldFilterSection.getConfigurationSection("action");
+            if (action == null) return false;
+            PunishType.of(action.getString("action", "none")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
+        }
+        return !passes.get();
     }
 
     private int countCommonCharacters(String s1, String s2) {
@@ -183,20 +205,37 @@ public class ModerationUtil {
             };
         }
 
-        public void punish(@NotNull Player player, Plugin plugin) {
+        public void punish(@NotNull Player player, Plugin plugin, String reason, int time) {
             Bukkit.getServer().getGlobalRegionScheduler().run(plugin, _ -> {
+                String liteBansTime = "";
+                Duration duration = null;
+                boolean isPermanent = time < 0;
+                if (!isPermanent) {
+                    duration = Duration.ofHours(time);
+                    liteBansTime = time + "h";
+                }
+
                 switch (this) {
-                    case NONE -> {
-                        // Do nothing
+                    case NONE -> { // Do nothing
                     }
                     case BAN -> {
-                        return; // TODO Ban the player
+                        if (IS_LITEBANS) {
+                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "ipban " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        } else {
+                            player.ban(reason, duration, "Irene");
+                        }
                     }
                     case KICK -> {
-                        return; // TODO Kick the player
+                        if (IS_LITEBANS) {
+                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "kick " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        } else {
+                            player.kick(ColorUtil.parse(player, reason));
+                        }
                     }
                     case MUTE -> {
-                        return; // TODO Mute the player
+                        if (IS_LITEBANS) {
+                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "ipmute " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        }
                     }
                 }
             });
