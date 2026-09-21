@@ -3,6 +3,8 @@ package net.chamosmp.irene.adventure;
 import io.papermc.paper.chat.ChatRenderer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.model.FormatConfig;
+import net.chamosmp.irene.model.HoverConfig;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
@@ -25,15 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Viewer UnAware Chat Renderer for SimpleChat.
- */
 public class IreneChatRenderer implements ChatRenderer {
 
     private final IrenePlugin plugin;
     private final LuckPermsUtil luckPermsUtil;
 
-    private final Map<String, Component> formats = new HashMap<>();
+    private final Map<String, FormatConfig> formats = new HashMap<>();
     private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
     public IreneChatRenderer(final IrenePlugin plugin, LuckPermsUtil luckPermsUtil) {
@@ -58,7 +57,13 @@ public class IreneChatRenderer implements ChatRenderer {
         plugin.getConfig().getConfigurationSection("chat-formats.formats").getKeys(false).forEach(key -> {
             String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
             if (formatString != null) {
-                formats.put(key, ColorUtil.parse(formatString));
+                formats.put(key, new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", "msg %player%"),
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".message", """
+                                <aqua>%player%'s Profile
+                                <reset>
+                                <light_purple>Click to message this player""")
+                )));
             }
         });
 
@@ -73,17 +78,13 @@ public class IreneChatRenderer implements ChatRenderer {
             viewer = source;
         }
 
-        final String formatKey = luckPermsUtil.getPrimaryGroup(source);
-        if (formatKey == null || formatKey.isEmpty()) {
+        final String primaryGroup = luckPermsUtil.getPrimaryGroup(source);
+        if (primaryGroup == null || primaryGroup.isEmpty()) {
             LoggerUtil.log(LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
             return Component.empty();
         }
 
-        Component format = formats.getOrDefault(formatKey, formats.get("default"));
-        if (format == null) {
-            LoggerUtil.log(LogType.WARNING, "Config does not contain a format for group " + formatKey + " and/or no \"default\" format is set.");
-            return Component.empty();
-        }
+        Component format = formats.getOrDefault(primaryGroup, formats.get("default")).getFormat();
         String stringFormat = ColorUtil.deParse(format);
 
         if (IS_PAPI_ENABLED) {
@@ -138,7 +139,7 @@ public class IreneChatRenderer implements ChatRenderer {
         placeholders.put("suffix", suffix);
         placeholders.put("message", ColorUtil.deParse(message));
         placeholders.put("name", source.getName());
-        placeholders.put("group", formatKey);
+        placeholders.put("group", primaryGroup);
 
         // Find meta tag references %meta-key% and replace them with their values
         for (Map.Entry<String, List<String>> meta : luckPermsUtil.getMeta(source).entrySet()) {
