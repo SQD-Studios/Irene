@@ -58,9 +58,9 @@ public class IreneChatRenderer implements ChatRenderer {
             String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
             if (formatString != null) {
                 formats.put(key, new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", "msg %player%"),
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", "msg %name%"),
                         plugin.getConfig().getString("chat-formats.hover." + key + ".message", """
-                                <aqua>%player%'s Profile
+                                <aqua>%name%'s Profile
                                 <reset>
                                 <light_purple>Click to message this player""")
                 )));

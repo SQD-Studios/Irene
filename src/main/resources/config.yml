@@ -8,10 +8,10 @@ chat-formats:
 
   hover:
     default: # Which group it is.
-      click-command: "msg %player%" # Without the starting /. You can use the player placeholder
+      click-command: "msg %name%" # Without the starting /. You can use the placeholders above
 
       message: |
-        <aqua>%player%'s Profile
+        <aqua>%name%'s Profile
         <reset>
         <light_purple>Click to message this player
         

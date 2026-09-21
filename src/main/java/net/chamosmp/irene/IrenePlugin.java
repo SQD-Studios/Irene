@@ -26,6 +26,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class IrenePlugin extends JavaPlugin {
 
     private DebugListener debugListener;
@@ -43,7 +45,7 @@ public class IrenePlugin extends JavaPlugin {
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();
         }
-        ConfigUtil.loadOrAdapt(this, "config.yml");
+        ConfigUtil.loadOrAdapt(this, "config.yml", List.of("chat-formats."));
 
         setupPluginMessaging();
 
@@ -89,7 +91,6 @@ public class IrenePlugin extends JavaPlugin {
                             MessageCommandBrigadier.create(
                                     getConfig().getString("private-message.name", "msg"),
                                     this,
-                                    moderationUtil,
                                     manager
                             ),
                             "",
@@ -103,7 +104,6 @@ public class IrenePlugin extends JavaPlugin {
                                 RespondCommandBrigadier.create(
                                         getConfig().getString("private-message.respond.name", "r"),
                                         this,
-                                        moderationUtil,
                                         manager
                                 ),
                                 "",
