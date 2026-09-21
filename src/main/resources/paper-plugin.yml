@@ -33,3 +33,19 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+
+permissions:
+  irene.admin:
+    default: op
+    children:
+      permission.node.child: true
+  irene.admin.spy:
+    default: op
+    children:
+      permission.node.child: true
+  irene.admin.reload:
+    default: op
+    children:
+      permission.node.child: true
+  irene.broadcast:
+    default: op

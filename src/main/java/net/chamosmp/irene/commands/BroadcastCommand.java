@@ -6,6 +6,7 @@ import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
 import net.strokkur.commands.arguments.StringArg;
 import net.strokkur.commands.arguments.StringArgType;
+import net.strokkur.commands.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,6 +22,7 @@ public class BroadcastCommand {
     }
 
     @Executes
+    @Permission("irene.broadcast")
     public void onExecute(@StringArg(StringArgType.GREEDY) String message) {
         HashMap<String, String> placeholders = new HashMap<>();
         placeholders.put("message", message);
