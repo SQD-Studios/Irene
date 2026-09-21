@@ -3,6 +3,7 @@ package net.chamosmp.irene;
 import github.scarsz.discordsrv.DiscordSRV;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.chamosmp.irene.commands.BroadcastCommandBrigadier;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
 import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
 import net.chamosmp.irene.commands.message.MessageCommandManager;
@@ -85,6 +86,7 @@ public class IrenePlugin extends JavaPlugin {
             try {
                 MessageCommandManager manager = new MessageCommandManager(this, moderationUtil);
                 IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager); // We know the parameter may be null
+                BroadcastCommandBrigadier.register(event.registrar(), ConfigUtil.loadOrAdapt(this, "broadcast.yml"));
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {
                     event.registrar().register(
