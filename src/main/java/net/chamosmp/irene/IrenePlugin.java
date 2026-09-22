@@ -24,6 +24,7 @@ import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.exceptions.CommandRegisterException;
 import net.chamosmp.sqdlib.paper.util.*;
 import net.chamosmp.sqdlib.util.LogType;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,6 +50,7 @@ public class IrenePlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         new LoggerUtil("<red>Irene</red>| ");
+        new Metrics(this, 34212);
 
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();

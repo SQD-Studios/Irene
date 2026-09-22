@@ -30,6 +30,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
     implementation("net.chamosmp.sqdlib:sqdlib-paper:2.1.2")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 
     // StrokkCommands
     compileOnly("net.strokkur.commands:annotations-paper:2.3.0")
@@ -67,6 +68,7 @@ tasks {
         configurations = project.configurations.runtimeClasspath.map { setOf(it) }
 
         relocate("net.chamosmp.sqdlib", "net.chamosmp.irene.libs.sqdlib")
+        relocate("org.bstats", "net.chamosmp.irene.libs.bstats")
     }
 
     withType<JavaCompile> {
