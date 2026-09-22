@@ -39,8 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class IrenePlugin extends JavaPlugin {
 
-    private DebugListener debugListener;
-    private ChatMessageListener chatMessageListener;
     private ModerationUtil moderationUtil;
     private @Nullable MessageMessaging messageMessaging = null;
     private LuckPermsUtil luckPermsUtil;
@@ -68,12 +66,12 @@ public class IrenePlugin extends JavaPlugin {
 
         this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
-        this.chatMessageListener = new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil);
+        new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil);
         new JoinListener(this, luckPermsUtil);
 
         if (debug) {
             LoggerUtil.log(LogType.INFO, "Debug mode is enabled.");
-            this.debugListener = new DebugListener(this);
+            new DebugListener(this);
         }
 
         setupDiscord();

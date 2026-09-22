@@ -166,7 +166,7 @@ public class IreneChatRenderer implements ChatRenderer {
     public @NotNull String pingCheck(@NotNull String message, @NotNull String pingChar) {
         final FileConfiguration config = plugin.getConfig();
 
-        final String stringSound = config.getString("pings.sound.name", "NOTE_BLOCK_BANJO").toLowerCase();
+        final String stringSound = config.getString("pings.sound.name", "block.note_block.banjo").toLowerCase();
         Sound sound = Registry.SOUND_EVENT.get(Key.key(stringSound));
         if (sound == null) { // TODO Doesn't really work so it always falls back here
             sound = Sound.BLOCK_NOTE_BLOCK_BIT;

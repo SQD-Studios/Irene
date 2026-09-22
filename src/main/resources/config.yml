@@ -63,7 +63,7 @@ pings:
   ping-character: "@"
   color: "<gold>" # What mini message color should the ping have?
   sound:
-    name: 'NOTE_BLOCK_BELL' # The sound to play, to the player being pinged. Find a value here: https://jd.papermc.io/paper/26.2/org/bukkit/Sound.html and remove the first prefix
+    name: 'block.note_block.bell' # The sound to play, to the player being pinged. You can see the minecraft sounds here: https://minecraft.wiki/w/Sounds.json#Sound_events
     volume: 100
     pitch: 100
 
