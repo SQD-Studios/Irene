@@ -17,17 +17,25 @@ import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
+import net.chamosmp.irene.model.RepeatedBroadcast;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.exceptions.CommandRegisterException;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.ConfigUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
+import net.chamosmp.sqdlib.paper.util.SchedulerUtil;
 import net.chamosmp.sqdlib.util.LogType;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class IrenePlugin extends JavaPlugin {
 
@@ -36,6 +44,8 @@ public class IrenePlugin extends JavaPlugin {
     private ModerationUtil moderationUtil;
     private @Nullable MessageMessaging messageMessaging = null;
     private LuckPermsUtil luckPermsUtil;
+
+    private YamlConfiguration broadcastConfig;
 
     public boolean debug = getConfig().getBoolean("debug", false);
 
@@ -47,6 +57,10 @@ public class IrenePlugin extends JavaPlugin {
             getDataFolder().mkdir();
         }
         ConfigUtil.loadOrAdapt(this, "config.yml", List.of("chat-formats."));
+
+        this.broadcastConfig = ConfigUtil.loadDataFile(this, "broadcast.yml");
+
+        scheduleBroadcast();
 
         setupPluginMessaging();
 
@@ -86,7 +100,7 @@ public class IrenePlugin extends JavaPlugin {
             try {
                 MessageCommandManager manager = new MessageCommandManager(this, moderationUtil);
                 IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager); // We know the parameter may be null
-                BroadcastCommandBrigadier.register(event.registrar(), ConfigUtil.loadOrAdapt(this, "broadcast.yml"));
+                BroadcastCommandBrigadier.register(event.registrar(), broadcastConfig);
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {
                     event.registrar().register(
@@ -143,5 +157,46 @@ public class IrenePlugin extends JavaPlugin {
                 Bukkit.getPluginManager().registerEvents(new EssentialsDiscordIntegration(this), this);
             }
         }
+    }
+
+    private void scheduleBroadcast() {
+        SchedulerUtil.runDelayed(this, () -> {
+            scheduleBroadcast();
+
+            RepeatedBroadcast message = getRandomBroadcast();
+            if (message == null) return;
+
+            Bukkit.getServer().sendMessage(ColorUtil.parse(message.message()));
+        }, ConfigUtil.loadDataFile(this, "broadcast.yml").getInt("repeated.every-s", 60));
+    }
+
+    private @Nullable RepeatedBroadcast getRandomBroadcast() {
+        ConfigurationSection section = broadcastConfig.getConfigurationSection("repeated.messages");
+        if (section == null) return null;
+
+        AtomicReference<List<RepeatedBroadcast>> broadcasts = new AtomicReference<>(new ArrayList<>());
+        section.getKeys(false).forEach(key -> {
+            broadcasts.get().add(new RepeatedBroadcast(
+                    section.getInt(key + ".chance"),
+                    section.getString(key + ".message", "")
+            ));
+        });
+        List<RepeatedBroadcast> broadcastList = broadcasts.get();
+        if (broadcastList.isEmpty()) return null;
+
+        RepeatedBroadcast selected = null;
+
+        int attempts = 0;
+        while (attempts < 10) {
+            RepeatedBroadcast reward = broadcastList.get(ThreadLocalRandom.current().nextInt(broadcastList.size()));
+            double chance = ThreadLocalRandom.current().nextDouble(0, 100);
+            if (reward.chance() >= 100 || reward.chance() >= chance) {
+                selected = reward;
+                break;
+            }
+            attempts++;
+        }
+
+        return selected;
     }
 }

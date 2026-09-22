@@ -1,2 +1,13 @@
 broadcast:
   format: "%message%"
+
+repeated:
+  every-s: 60 # How frequently should it try to send a message. In seconds
+
+  messages:
+    1:
+      chance: 10
+      message: |
+        <#7289da><b>Want to join the community?
+        
+        <#7289da><b><click:open_url:'https://discord.gg/YmQs87ZTBB'>> CLICK TO JOIN DISCORD
