@@ -16,19 +16,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModerationUtil {
 
-    /**
-     * Is moderation enabled?
-     */
     private boolean isEnabled;
-
-    /**
-     * The check section of {@code moderation.yml}
-     */
     private ConfigurationSection checkSection;
-
+    private ConfigurationSection wordFilterSection;
     private YamlConfiguration config;
 
     /**
@@ -48,11 +43,8 @@ public class ModerationUtil {
 
     public ModerationUtil(IrenePlugin plugin) {
         this.plugin = plugin;
-        config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
 
-        this.isEnabled = config.getBoolean("moderation.enabled", false);
-        this.checkSection = config.getConfigurationSection("moderation.checks");
-        this.messagePrefix = config.getString("moderation.messages-prefix", "");
+        reloadConfig();
     }
 
     public boolean moderateMessage(Player player, Component message) {
@@ -61,7 +53,7 @@ public class ModerationUtil {
 
     public boolean moderateMessage(Player player, String message) {
         if (isEnabled) {
-            return !limitedLength(player, message) && !spam(player, message);
+            return !limitedLength(player, message) && !spam(player, message) && !worldFilter(player, message);
         }
         return true; // It should always return true if moderation is disabled
     }
@@ -158,19 +150,33 @@ public class ModerationUtil {
     }
 
     public boolean worldFilter(Player player, String message) {
-        ConfigurationSection worldFilterSection = config.getConfigurationSection("world-filter");
-        if (worldFilterSection == null) return true;
+        if (wordFilterSection == null) return false;
 
         AtomicBoolean passes = new AtomicBoolean(true);
-        worldFilterSection.getKeys(false).forEach(key -> {
 
+        wordFilterSection.getKeys(false).forEach(key -> {
+            ConfigurationSection worldFilter = wordFilterSection.getConfigurationSection(key);
+            if (worldFilter == null) return;
+
+            List<String> rawPatterns = worldFilter.getStringList("patterns");
+
+            for (String pattern : rawPatterns) {
+                Matcher matcher = Pattern.compile(pattern).matcher(message);
+                if (matcher.find()) {
+                    passes.set(false);
+
+                    ConfigurationSection action = worldFilter.getConfigurationSection("action");
+                    if (action == null) return;
+
+                    messagePlayer(player, action.getString("message", "Reason: You send a link"));
+                    PunishType.of(
+                            action.getString("action", "none")
+                    ).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
+
+                    break;
+                }
+            }
         });
-
-        if (!passes.get()) {
-            ConfigurationSection action = worldFilterSection.getConfigurationSection("action");
-            if (action == null) return false;
-            PunishType.of(action.getString("action", "none")).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
-        }
         return !passes.get();
     }
 
@@ -243,10 +249,11 @@ public class ModerationUtil {
     }
 
     public void reloadConfig() {
-        YamlConfiguration moderationConfig = ConfigUtil.loadDataFile(plugin, "moderation.yml");
+        this.config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
 
-        this.isEnabled = moderationConfig.getBoolean("moderation.enabled", false);
-        this.checkSection = moderationConfig.getConfigurationSection("moderation.checks");
-        this.messagePrefix = moderationConfig.getString("moderation.messages-prefix", "");
+        this.isEnabled = config.getBoolean("moderation.enabled", false);
+        this.checkSection = config.getConfigurationSection("moderation.checks");
+        this.messagePrefix = config.getString("moderation.messages-prefix", "");
+        this.wordFilterSection = config.getConfigurationSection("moderation.word-filter");
     }
 }

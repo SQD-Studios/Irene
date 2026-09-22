@@ -14,7 +14,7 @@ chat-formats:
         <aqua>%name%'s Profile
         <reset>
         <light_purple>Click to message this player
-        
+
 
 chat-heads:
   enabled: true # Should it be enabled
