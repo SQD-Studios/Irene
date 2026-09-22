@@ -15,6 +15,11 @@ chat-formats:
         <reset>
         <light_purple>Click to message this player
 
+deletions: # Allows players to delete their messages
+  enabled: false
+
+  delete-button: "<b><dark_gray>[</dark_gray><red>X</red><dark_gray>]</dark_gray></b>"
+  use-dialog: true
 
 chat-heads:
   enabled: true # Should it be enabled
@@ -61,6 +66,7 @@ private-message:
 pings:
   enabled: false
   ping-character: "@"
+  chat-complete: true
   color: "<gold>" # What mini message color should the ping have?
   sound:
     name: 'block.note_block.bell' # The sound to play, to the player being pinged. You can see the minecraft sounds here: https://minecraft.wiki/w/Sounds.json#Sound_events

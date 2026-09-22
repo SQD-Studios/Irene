@@ -16,12 +16,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class JoinListener implements Listener {
+public class JoinLeaveListener implements Listener {
 
     private final IrenePlugin plugin;
     private final LuckPermsUtil util;
 
-    public JoinListener(IrenePlugin plugin, LuckPermsUtil util) {
+    public JoinLeaveListener(IrenePlugin plugin, LuckPermsUtil util) {
         this.plugin = plugin;
         this.util = util;
 
@@ -31,6 +31,19 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+        if (plugin.getConfig().getBoolean("pings.enabled", true) && plugin.getConfig().getBoolean("pings.chat-complete", true)) { // Some weird stuff
+            String pingChar = plugin.getConfig().getString("pings.ping-character", "@");
+            player.addCustomChatCompletions(
+                    Bukkit.getServer().getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .map(playerName -> pingChar + playerName)
+                            .toList()
+            );
+            Bukkit.getServer().getOnlinePlayers().stream()
+                    .filter(pl -> !pl.equals(player))
+                    .forEach(pl -> pl.addCustomChatCompletions(List.of(pingChar + player.getName())));
+        }
 
         FileConfiguration config = plugin.getConfig();
 
@@ -62,6 +75,19 @@ public class JoinListener implements Listener {
         Player player = event.getPlayer();
         FileConfiguration config = plugin.getConfig();
         Map<String, String> placeholders = getPlaceholders(player);
+
+        if (config.getBoolean("pings.enabled", true) && config.getBoolean("pings.chat-complete", true)) { // Some weird stuff
+            String pingChar = config.getString("pings.ping-character", "@");
+            player.removeCustomChatCompletions(
+                    Bukkit.getServer().getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .map(playerName -> pingChar + playerName)
+                            .toList()
+            );
+            Bukkit.getServer().getOnlinePlayers().stream()
+                    .filter(pl -> !pl.equals(player))
+                    .forEach(pl -> pl.removeCustomChatCompletions(List.of(pingChar + player.getName())));
+        }
 
         if (config.getBoolean("join-and-leave-messages.enabled")) {
             String leave = config.getString("join-and-leave-messages.leave");

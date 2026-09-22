@@ -1,28 +1,24 @@
-package net.chamosmp.irene.adventure;
+package net.chamosmp.irene.renderer;
 
 import io.papermc.paper.chat.ChatRenderer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.model.FormatConfig;
 import net.chamosmp.irene.model.HoverConfig;
+import net.chamosmp.irene.util.ChatUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
 import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.key.Key;
+import net.kyori.adventure.chat.SignedMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Registry;
-import org.bukkit.Sound;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,22 +27,18 @@ public class IreneChatRenderer implements ChatRenderer {
 
     private final IrenePlugin plugin;
     private final LuckPermsUtil luckPermsUtil;
+    private final ChatUtil chatUtil;
+
+    private final SignedMessage.Signature signature;
 
     private final Map<String, FormatConfig> formats = new HashMap<>();
     private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
-    public IreneChatRenderer(final IrenePlugin plugin, LuckPermsUtil luckPermsUtil) {
+    public IreneChatRenderer(final IrenePlugin plugin, LuckPermsUtil luckPermsUtil, ChatUtil chatUtil, SignedMessage.Signature signature) {
         this.plugin = plugin;
-
-        // Setup LuckPerms
         this.luckPermsUtil = luckPermsUtil;
-
-        // Setup PlaceholderAPI
-        if (IS_PAPI_ENABLED) {
-            LoggerUtil.log(LogType.INFO, "PlaceholderAPI found, placeholders will be processed");
-        } else {
-            LoggerUtil.log(LogType.WARNING, "PlaceholderAPI not found, placeholders will not be processed");
-        }
+        this.chatUtil = chatUtil;
+        this.signature = signature;
 
         // Make sure the config has at least one format defined
         if (!plugin.getConfig().isConfigurationSection("chat-formats.formats")) {
@@ -58,16 +50,11 @@ public class IreneChatRenderer implements ChatRenderer {
             String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
             if (formatString != null) {
                 formats.put(key, new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", "msg %name%"),
-                        plugin.getConfig().getString("chat-formats.hover." + key + ".message", """
-                                <aqua>%name%'s Profile
-                                <reset>
-                                <light_purple>Click to message this player""")
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command"),
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".message")
                 )));
             }
         });
-
-        LoggerUtil.log(LogType.INFO, "Loaded " + formats.size() + " chat formats from config.");
     }
 
     @Override
@@ -123,7 +110,7 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
-            message = ColorUtil.parse(emojiPlaceholder(
+            message = ColorUtil.parse(ChatUtil.emojiPlaceholder(
                     ColorUtil.deParse(message),
                     plugin.getConfig().getString("emojis.character", ":"),
                     plugin.getConfig().getBoolean("emojis.items"),
@@ -132,7 +119,7 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         if (plugin.getConfig().getBoolean("pings.enabled", true)) {
-            message = ColorUtil.parse(pingCheck(ColorUtil.deParse(message), plugin.getConfig().getString("pings.ping-character", "@")));
+            message = ColorUtil.parse(chatUtil.pingCheck(ColorUtil.deParse(message), plugin.getConfig().getString("pings.ping-character", "@")));
         }
 
         placeholders.put("prefix", prefix);
@@ -155,97 +142,11 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         if (plugin.getConfig().getBoolean("chat-formats.enabled")) {
-            return ColorUtil.parse(source, stringFormat, placeholders);
+            return ColorUtil.parse(source, stringFormat, placeholders).append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
         } else if (plugin.getConfig().getBoolean("chat-heads")) {
-            return ColorUtil.parse("<head:" + source.getName() + ">").append(message);
+            return ColorUtil.parse("<head:" + source.getName() + ">").append(message).append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
         } else {
-            return message;
+            return message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
         }
-    }
-
-    public @NotNull String pingCheck(@NotNull String message, @NotNull String pingChar) {
-        final FileConfiguration config = plugin.getConfig();
-
-        final String stringSound = config.getString("pings.sound.name", "block.note_block.banjo").toLowerCase();
-        Sound sound = Registry.SOUND_EVENT.get(Key.key(stringSound));
-        if (sound == null) { // TODO Doesn't really work so it always falls back here
-            sound = Sound.BLOCK_NOTE_BLOCK_BIT;
-        }
-        float volume = config.getInt("pings.sound.volume", 1);
-        float pitch = config.getInt("pings.sound.pitch", 1);
-
-        if (message.contains(pingChar)) {
-            List<String> list = new ArrayList<>();
-            for (int i = message.indexOf(pingChar); message.indexOf(pingChar, i) != -1; i++) {
-                int second = message.indexOf(" ", i + 1);
-
-                // We are not certain that this may be a ping, but if you just ping a player (without a space), it will ping.
-                // To be sure it's a player below snippets check if a player exists with that name and is online
-                if (second == -1) {
-                    second = message.length();
-                    String key = message.substring(i + 1, second);
-                    message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch));
-                    break;
-                }
-
-                if (i == -1) return message;
-
-                String key = message.substring(i + 1, second);
-                if (list.contains(key)) {
-                    message = message.replace(pingChar + key, plugin.getConfig().getString("pings.color", "<gold>") + pingChar + key + "<reset>");
-                    continue;
-                }
-                message = message.replace(pingChar + key, pingWithPlayer(key, pingChar, sound, volume, pitch));
-                list.add(key);
-            }
-            return message;
-        }
-        return message;
-    }
-
-    private @NotNull String pingWithPlayer(@NotNull String key, @NotNull String pingChar, Sound sound, float volume, float pitch) {
-        String result = pingChar + key;
-        Player player = Bukkit.getPlayerExact(key);
-        if (player != null && player.isConnected()) {
-            result = plugin.getConfig().getString("pings.color", "<gold>") + result + "<reset>";
-            player.getScheduler().run(plugin, _ -> {
-                player.stopSound(sound);
-                player.playSound(player, sound, volume, pitch);
-            }, null);
-        }
-        return result;
-    }
-
-    public static @NotNull String emojiPlaceholder(@NotNull String message, @NotNull String emojiCharacter, boolean playerHeads, boolean items) {
-        if (message.contains(emojiCharacter)) {
-            for (int i = message.indexOf(emojiCharacter); message.indexOf(emojiCharacter, i) != -1; i++) {
-                int second = message.indexOf(emojiCharacter, i + 1);
-                if (i == -1 || second == -1) return message;
-
-                String key = message.substring(i + 1, second);
-                message = message.replace(emojiCharacter + key + emojiCharacter, keyEmojiPlaceholder(key, emojiCharacter, playerHeads, items));
-            }
-            return message;
-        }
-
-        return message;
-    }
-
-    private static @NotNull String keyEmojiPlaceholder(@NotNull String key, @NotNull String emojiChar, boolean playerHeads, boolean items) {
-        String result = emojiChar + key + emojiChar;
-        Material material = Material.getMaterial(key.toUpperCase());
-        if (material != null && items) {
-            if (material.isBlock()) {
-                result = "<white><sprite:blocks:block/" + key + "></white>";
-            } else if (material.isItem()) {
-                result = "<white><sprite:items:item/" + key + "></white>";
-            }
-        } else {
-            Player player = Bukkit.getPlayerExact(key);
-            if (player != null && playerHeads) {
-                result = "<white><head:" + player.getName() + "></white>";
-            }
-        }
-        return result;
     }
 }

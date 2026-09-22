@@ -49,3 +49,7 @@ permissions:
       permission.node.child: true
   irene.broadcast:
     default: op
+  irene.admin.clear:
+    default: op
+    children:
+      permission.node.child: true

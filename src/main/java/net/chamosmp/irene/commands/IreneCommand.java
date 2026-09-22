@@ -5,6 +5,8 @@ import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.commands.message.MessageCommandManager;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
+import net.chamosmp.irene.util.ChatUtil;
+import net.chamosmp.irene.util.DeleteMessageUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
@@ -23,14 +25,15 @@ public class IreneCommand {
     private final @Nullable MessageMessaging messageMessaging;
     private final LuckPermsUtil luckPermsUtil;
     private final MessageCommandManager messageStorage;
+    private final ChatUtil chatUtil;
 
-    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, MessageCommandManager messageStorage) {
+    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, MessageCommandManager messageStorage, ChatUtil chatUtil) {
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
         this.messageMessaging = messageMessaging;
         this.luckPermsUtil = luckPermsUtil;
-
         this.messageStorage = messageStorage;
+        this.chatUtil = chatUtil;
     }
 
     @Executes("reload")
@@ -38,7 +41,7 @@ public class IreneCommand {
     public void onReload(@NotNull CommandSender commandSender) {
         plugin.reloadConfig();
         AsyncChatEvent.getHandlerList().unregister(plugin);
-        new ChatMessageListener(plugin, moderationUtil, messageMessaging, luckPermsUtil);
+        new ChatMessageListener(plugin, moderationUtil, messageMessaging, luckPermsUtil, chatUtil);
         moderationUtil.reloadConfig();
         commandSender.sendMessage(ColorUtil.parse(plugin.getConfig().getString("messages.reloaded", "<green>Irene Reloaded.")));
     }
@@ -53,5 +56,12 @@ public class IreneCommand {
             messageStorage.spies.add(commandSender);
             commandSender.sendMessage(ColorUtil.parse("<green>You are now spying"));
         }
+    }
+
+    @Executes("clear")
+    @Permission("irene.admin.clear")
+    public void onClear(@NotNull CommandSender commandSender) {
+        DeleteMessageUtil.deleteAllChat();
+        commandSender.sendMessage(ColorUtil.parse("<green>The chat has been cleared"));
     }
 }

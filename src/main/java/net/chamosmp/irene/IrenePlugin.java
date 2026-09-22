@@ -12,19 +12,17 @@ import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
-import net.chamosmp.irene.listeners.JoinListener;
+import net.chamosmp.irene.listeners.JoinLeaveListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.model.RepeatedBroadcast;
+import net.chamosmp.irene.util.ChatUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.exceptions.CommandRegisterException;
-import net.chamosmp.sqdlib.paper.util.ColorUtil;
-import net.chamosmp.sqdlib.paper.util.ConfigUtil;
-import net.chamosmp.sqdlib.paper.util.LoggerUtil;
-import net.chamosmp.sqdlib.paper.util.SchedulerUtil;
+import net.chamosmp.sqdlib.paper.util.*;
 import net.chamosmp.sqdlib.util.LogType;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -42,6 +40,7 @@ public class IrenePlugin extends JavaPlugin {
     private ModerationUtil moderationUtil;
     private @Nullable MessageMessaging messageMessaging = null;
     private LuckPermsUtil luckPermsUtil;
+    private ChatUtil chatUtil;
 
     private YamlConfiguration broadcastConfig;
 
@@ -66,8 +65,10 @@ public class IrenePlugin extends JavaPlugin {
 
         this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
-        new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil);
-        new JoinListener(this, luckPermsUtil);
+        this.chatUtil = new ChatUtil(this, new DialogUtil(this));
+
+        new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil, chatUtil);
+        new JoinLeaveListener(this, luckPermsUtil);
 
         if (debug) {
             LoggerUtil.log(LogType.INFO, "Debug mode is enabled.");
@@ -97,7 +98,7 @@ public class IrenePlugin extends JavaPlugin {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
             try {
                 MessageCommandManager manager = new MessageCommandManager(this, moderationUtil);
-                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager); // We know the parameter may be null
+                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager, chatUtil); // We know the parameter may be null
                 BroadcastCommandBrigadier.register(event.registrar(), broadcastConfig);
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {

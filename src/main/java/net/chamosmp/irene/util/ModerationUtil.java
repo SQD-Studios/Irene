@@ -24,7 +24,6 @@ public class ModerationUtil {
     private boolean isEnabled;
     private ConfigurationSection checkSection;
     private ConfigurationSection wordFilterSection;
-    private YamlConfiguration config;
 
     /**
      * The prefix for all messages
@@ -249,7 +248,7 @@ public class ModerationUtil {
     }
 
     public void reloadConfig() {
-        this.config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
+        YamlConfiguration config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
 
         this.isEnabled = config.getBoolean("moderation.enabled", false);
         this.checkSection = config.getConfigurationSection("moderation.checks");
