@@ -60,6 +60,7 @@ public class IreneChatRenderer implements ChatRenderer {
     @Override
     public @NotNull Component render(@NotNull Player source, @NotNull Component sourceDisplayName,
                                      @NotNull Component message, @NotNull Audience viewer) {
+        message = message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
         if (!(viewer instanceof Player)) {
             // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
             viewer = source;
@@ -142,11 +143,11 @@ public class IreneChatRenderer implements ChatRenderer {
         }
 
         if (plugin.getConfig().getBoolean("chat-formats.enabled")) {
-            return ColorUtil.parse(source, stringFormat, placeholders).append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
+            return ColorUtil.parse(source, stringFormat, placeholders);
         } else if (plugin.getConfig().getBoolean("chat-heads")) {
-            return ColorUtil.parse("<head:" + source.getName() + ">").append(message).append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
+            return ColorUtil.parse("<head:" + source.getName() + ">").append(message);
         } else {
-            return message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source));
+            return message;
         }
     }
 }
