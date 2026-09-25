@@ -50,8 +50,8 @@ public class IreneChatRenderer implements ChatRenderer {
             String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
             if (formatString != null) {
                 formats.put(key, new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", null),
-                        plugin.getConfig().getString("chat-formats.hover." + key + ".message", null)
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", plugin.getConfig().getString("chat-formats.hover.default.click-command", null)),
+                        plugin.getConfig().getString("chat-formats.hover." + key + ".message", plugin.getConfig().getString("chat-formats.hover.default.message", null))
                 )));
             }
         });

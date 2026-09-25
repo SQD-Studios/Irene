@@ -165,13 +165,14 @@ public class IrenePlugin extends JavaPlugin {
             scheduleBroadcast();
 
             RepeatedBroadcast message = getRandomBroadcast();
-            if (message == null) return;
+            if (message == null || message.message() == null) return;
 
             Bukkit.getServer().sendMessage(ColorUtil.parse(message.message()));
         }, ConfigUtil.loadDataFile(this, "broadcast.yml").getInt("repeated.every-s", 60));
     }
 
     private @Nullable RepeatedBroadcast getRandomBroadcast() {
+        this.broadcastConfig = ConfigUtil.loadDataFile(this, "broadcast.yml");
         ConfigurationSection section = broadcastConfig.getConfigurationSection("repeated.messages");
         if (section == null) return null;
 
@@ -179,7 +180,7 @@ public class IrenePlugin extends JavaPlugin {
         section.getKeys(false).forEach(key -> {
             broadcasts.get().add(new RepeatedBroadcast(
                     section.getInt(key + ".chance"),
-                    section.getString(key + ".message", "")
+                    section.getString(key + ".message", null)
             ));
         });
         List<RepeatedBroadcast> broadcastList = broadcasts.get();
