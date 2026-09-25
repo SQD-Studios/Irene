@@ -11,7 +11,6 @@ import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.StandardCharsets;
@@ -27,7 +26,6 @@ public class RabbitMessage implements MessageMessaging {
 
     private final UUID temporaryServerUuid = UUID.randomUUID();
 
-    private ConnectionFactory factory;
     private Connection connection;
     private Channel channel;
 
@@ -40,18 +38,7 @@ public class RabbitMessage implements MessageMessaging {
     @Override
     public void connect() {
         try {
-            FileConfiguration config = plugin.getConfig();
-            String host = config.getString("messaging.host", "localhost");
-            int port = config.getInt("messaging.port", 5672);
-            String password = config.getString("messaging.password");
-            String user = config.getString("messaging.rabbitmq-user");
-
-
-            factory = new ConnectionFactory();
-            factory.setHost(host);
-            factory.setUsername(user);
-            factory.setPassword(password);
-            factory.setPort(port);
+            ConnectionFactory factory = getConnectionFactory();
 
 
             connection = factory.newConnection();
@@ -66,8 +53,24 @@ public class RabbitMessage implements MessageMessaging {
         }
     }
 
+    private @NonNull ConnectionFactory getConnectionFactory() {
+        FileConfiguration config = plugin.getConfig();
+        String host = config.getString("messaging.host", "localhost");
+        int port = config.getInt("messaging.port", 5672);
+        String password = config.getString("messaging.password");
+        String user = config.getString("messaging.rabbitmq-user");
+
+
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(host);
+        factory.setUsername(user);
+        factory.setPassword(password);
+        factory.setPort(port);
+        return factory;
+    }
+
     @Override
-    public Future<?> sendMessage(@NotNull Component message) {
+    public Future<?> sendMessage(@NonNull Component message) {
         return CompletableFuture.runAsync(() -> {
             try {
                 String stringMessage = ColorUtil.deParse(message) + temporaryServerUuid;
@@ -89,7 +92,7 @@ public class RabbitMessage implements MessageMessaging {
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String stringMessage = new String(delivery.getBody(), StandardCharsets.UTF_8);
                 if (!stringMessage.endsWith(temporaryServerUuid.toString())) {
-                    Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(stringMessage)));
+                    Bukkit.getServer().sendMessage(ColorUtil.parse(MessageMessaging.removeUuidFromMessage(stringMessage)));
                 }
             };
             channel.basicConsume(queueName, true, deliverCallback, _ -> {
@@ -97,23 +100,6 @@ public class RabbitMessage implements MessageMessaging {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public @NonNull String removeUuidFromMessage(@NotNull String message) {
-        boolean isStillGoing = true;
-        for (int i = 0; isStillGoing; i++) {
-            try {
-                String temporaryMessage = message.substring(i);
-                UUID uuid = UUID.fromString(temporaryMessage);
-
-                message = message.replace(uuid.toString(), "");
-
-                isStillGoing = false;
-            } catch (IllegalArgumentException _) {
-            }
-        }
-        return message;
     }
 
     @Override

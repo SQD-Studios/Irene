@@ -12,9 +12,8 @@ import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -68,7 +67,7 @@ public class RedisMessage implements MessageMessaging {
     }
 
     @Override
-    public @Nullable RedisFuture<Long> sendMessage(@NotNull Component message) {
+    public @Nullable RedisFuture<Long> sendMessage(@NonNull Component message) {
         return async.publish(CHANNEL_NAME, ColorUtil.deParse(message) + temporaryServerUuid);
     }
 
@@ -78,27 +77,10 @@ public class RedisMessage implements MessageMessaging {
             @Override
             public void message(String channel, String message) {
                 if (channel.equals(CHANNEL_NAME) && !message.endsWith(temporaryServerUuid.toString())) {
-                    Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(message)));
+                    Bukkit.getServer().sendMessage(ColorUtil.parse(MessageMessaging.removeUuidFromMessage(message)));
                 }
             }
         });
-    }
-
-    @Override
-    public @NonNull String removeUuidFromMessage(@NotNull String message) {
-        boolean isStillGoing = true;
-        for (int i = 0; isStillGoing; i++) {
-            try {
-                String temporaryMessage = message.substring(i);
-                UUID uuid = UUID.fromString(temporaryMessage);
-
-                message = message.replace(uuid.toString(), "");
-
-                isStillGoing = false;
-            } catch (IllegalArgumentException _) {
-            }
-        }
-        return message;
     }
 
     @Override

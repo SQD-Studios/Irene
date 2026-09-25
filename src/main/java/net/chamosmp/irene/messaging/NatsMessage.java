@@ -10,7 +10,6 @@ import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
@@ -53,7 +52,7 @@ public class NatsMessage implements MessageMessaging {
     }
 
     @Override
-    public Future<?> sendMessage(@NotNull Component message) {
+    public Future<?> sendMessage(@NonNull Component message) {
         return CompletableFuture.runAsync(() -> {
             String messageAndUuid = ColorUtil.deParse(message) + temporaryServerUuid;
             byte[] messageInBytes = messageAndUuid.getBytes(StandardCharsets.UTF_8);
@@ -66,28 +65,11 @@ public class NatsMessage implements MessageMessaging {
         Dispatcher d = connection.createDispatcher(msg -> {
             String stringMessage = new String(msg.getData(), StandardCharsets.UTF_8);
             if (!stringMessage.endsWith(temporaryServerUuid.toString())) {
-                Bukkit.getServer().sendMessage(ColorUtil.parse(removeUuidFromMessage(stringMessage)));
+                Bukkit.getServer().sendMessage(ColorUtil.parse(MessageMessaging.removeUuidFromMessage(stringMessage)));
             }
         });
         d.subscribe(CHANNEL_NAME);
         LoggerUtil.log(LogType.INFO, "Successfully subscribed to the NATS Channels");
-    }
-
-    @Override
-    public @NonNull String removeUuidFromMessage(@NotNull String message) {
-        boolean isStillGoing = true;
-        for (int i = 0; isStillGoing; i++) {
-            try {
-                String temporaryMessage = message.substring(i);
-                UUID uuid = UUID.fromString(temporaryMessage);
-
-                message = message.replace(uuid.toString(), "");
-
-                isStillGoing = false;
-            } catch (IllegalArgumentException _) {
-            }
-        }
-        return message;
     }
 
     @Override
