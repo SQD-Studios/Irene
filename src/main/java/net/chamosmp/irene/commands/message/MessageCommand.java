@@ -1,6 +1,7 @@
 package net.chamosmp.irene.commands.message;
 
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.commands.suggestions.NoVanishPlayers;
 import net.chamosmp.sqdlib.lang.value.DoubleValue;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.strokkur.commands.Command;
@@ -27,7 +28,7 @@ public class MessageCommand {
     }
 
     @Executes
-    public void execute(@Executor Player sender, Player player, @StringArg(StringArgType.GREEDY) String message) {
+    public void execute(@Executor Player sender, @NoVanishPlayers Player player, @StringArg(StringArgType.GREEDY) String message) {
         if (!player.isOnline()) {
             sender.sendMessage(ColorUtil.parse(
                     sender,
