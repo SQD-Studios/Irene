@@ -3,8 +3,6 @@ package net.chamosmp.irene.commands.message;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
-import net.chamosmp.sqdlib.paper.util.LoggerUtil;
-import net.chamosmp.sqdlib.util.LogType;
 import net.kyori.adventure.text.Component;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
@@ -12,6 +10,8 @@ import net.strokkur.commands.arguments.StringArg;
 import net.strokkur.commands.arguments.StringArgType;
 import net.strokkur.commands.paper.Executor;
 import org.bukkit.entity.Player;
+
+import java.util.Map;
 
 @Command("r")
 public class RespondCommand {
@@ -34,15 +34,21 @@ public class RespondCommand {
         DoubleValueList<Player, Player> doubleValueList = storage.messageMap;
 
         if (doubleValueList.contains(player)) {
-            Player receiver = (Player) doubleValueList.get(player);
-            if (receiver != null) {
-                storage.sendMessage(receiver, player, message);
+            Object receiver = doubleValueList.get(player);
+            if (receiver instanceof Player p) {
+                if (!p.isOnline() || !player.canSee(p)) {
+                    player.sendMessage(ColorUtil.parse(
+                            player,
+                            plugin.getConfig().getString("private-message.player-not-online", "<gray>%player% is not online"),
+                            Map.of("player", player.getName())
+                    ));
+                }
+
+                storage.sendMessage(p, player, message);
             } else {
-                LoggerUtil.log(LogType.INFO, "The receiver is null");
                 player.sendMessage(notInAConversation);
             }
         } else {
-            LoggerUtil.log(LogType.INFO, "The double value list does not contain a player");
             player.sendMessage(notInAConversation);
         }
     }

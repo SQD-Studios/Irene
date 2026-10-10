@@ -29,7 +29,7 @@ public class MessageCommand {
 
     @Executes
     public void execute(@Executor Player sender, @NoVanishPlayers Player player, @StringArg(StringArgType.GREEDY) String message) {
-        if (!player.isOnline()) {
+        if (!player.isOnline() || !sender.canSee(player)) {
             sender.sendMessage(ColorUtil.parse(
                     sender,
                     plugin.getConfig().getString("private-message.player-not-online", "<gray>%player% is not online"),
