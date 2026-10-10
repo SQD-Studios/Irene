@@ -158,11 +158,21 @@ public class ModerationUtil {
             if (worldFilter == null) return;
 
             List<String> rawPatterns = worldFilter.getStringList("patterns");
+            List<String> rawExlusions = worldFilter.getStringList("exclusions");
 
             for (String pattern : rawPatterns) {
                 Matcher matcher = Pattern.compile(pattern).matcher(message);
                 if (matcher.find()) {
                     passes.set(false);
+
+                    for (String exclusion : rawExlusions) {
+                        Matcher matcher2 = Pattern.compile(exclusion).matcher(message);
+                        if (matcher2.find()) {
+                            passes.set(true);
+                        }
+                    }
+
+                    if (passes.get()) continue;
 
                     ConfigurationSection action = worldFilter.getConfigurationSection("action");
                     if (action == null) return;

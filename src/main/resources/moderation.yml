@@ -8,6 +8,9 @@ moderation:
       patterns:
         - "(?i)http://"
         - "(?i)https://"
+      exclusions:
+        # For example, let you allow to post the discord server link
+        #- "(?i)https://discord.gg/**"
       action:
         message: "Reason: You send a link" # Allowed placeholders: %a_size% %p_size%
 
