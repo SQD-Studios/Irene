@@ -1,6 +1,15 @@
 moderation:
   enabled: true
 
+  # This mostly applies to word filter
+  censor: # If you don't want to block the messages, you can censor them
+    enabled: true
+
+    match-censored-length: false # If it should match the length of the censored part
+    censor-char-length: 4 # If the above option is disabled, how many censor characters should it place
+
+    censor-char: "*" # What character should it use to censor it?
+
   messages-prefix: "<red>You flagged the auto mod! "
 
   word-filter: # Goes through all the options
@@ -12,6 +21,8 @@ moderation:
         # For example, let you allow to post the discord server link
         #- "(?i)https://discord.gg/**"
       action:
+        block-message: true # This will block the message in chat
+
         message: "Reason: You send a link" # Allowed placeholders: %a_size% %p_size%
 
         action: MUTE # Available: mute, kick, ban or anything else to disable it

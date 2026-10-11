@@ -1,12 +1,12 @@
 package net.chamosmp.irene.util;
 
+import com.google.common.base.Strings;
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.ConfigUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,7 @@ public class ModerationUtil {
     private boolean isEnabled;
     private ConfigurationSection checkSection;
     private ConfigurationSection wordFilterSection;
+    private ConfigurationSection config;
 
     /**
      * The prefix for all messages
@@ -148,6 +150,7 @@ public class ModerationUtil {
         return spam || tooSimilar;
     }
 
+    @SuppressWarnings("all")
     public boolean worldFilter(Player player, String message) {
         if (wordFilterSection == null) return false;
 
@@ -158,14 +161,17 @@ public class ModerationUtil {
             if (worldFilter == null) return;
 
             List<String> rawPatterns = worldFilter.getStringList("patterns");
-            List<String> rawExlusions = worldFilter.getStringList("exclusions");
+            List<String> rawExclusions = worldFilter.getStringList("exclusions");
 
             for (String pattern : rawPatterns) {
                 Matcher matcher = Pattern.compile(pattern).matcher(message);
                 if (matcher.find()) {
-                    passes.set(false);
+                    ConfigurationSection action = worldFilter.getConfigurationSection("action");
+                    if (action == null) return;
 
-                    for (String exclusion : rawExlusions) {
+                    passes.set(action.getBoolean("block-message", true));
+
+                    for (String exclusion : rawExclusions) {
                         Matcher matcher2 = Pattern.compile(exclusion).matcher(message);
                         if (matcher2.find()) {
                             passes.set(true);
@@ -173,6 +179,57 @@ public class ModerationUtil {
                     }
 
                     if (passes.get()) continue;
+
+                    messagePlayer(player, action.getString("message", "Reason: You send a link"));
+                    PunishType.of(
+                            action.getString("action", "none")
+                    ).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
+
+                    break;
+                }
+            }
+        });
+        return !passes.get();
+    }
+
+    @SuppressWarnings("all")
+    public String censorWordFilter(Player player, String message) {
+        if (!isEnabled) return message;
+        if (wordFilterSection == null) return message;
+        if (!config.getBoolean("moderation.censor.enabled")) return message;
+
+        AtomicBoolean passes = new AtomicBoolean(true);
+        AtomicReference<String> messageRef = new AtomicReference<>(message);
+
+        wordFilterSection.getKeys(false).forEach(key -> {
+            ConfigurationSection worldFilter = wordFilterSection.getConfigurationSection(key);
+            if (worldFilter == null) return;
+
+            List<String> rawPatterns = worldFilter.getStringList("patterns");
+            List<String> rawExclusions = worldFilter.getStringList("exclusions");
+
+            for (String pattern : rawPatterns) {
+                Matcher matcher = Pattern.compile(pattern).matcher(message);
+                if (matcher.find()) {
+                    passes.set(false);
+
+                    for (String exclusion : rawExclusions) {
+                        Matcher matcher2 = Pattern.compile(exclusion).matcher(message);
+                        if (matcher2.find()) {
+                            passes.set(true);
+                        }
+                    }
+
+                    if (passes.get()) continue;
+
+                    int length = matcher.end() - matcher.start();
+                    if (!config.getBoolean("moderation.censor.match-censored-length")) {
+                        length = config.getInt("moderation.censor.censor-char-length");
+                    }
+                    String censorChar = config.getString("moderation.censor.censor-char");
+                    String replacement = Strings.repeat(censorChar, length);
+
+                    messageRef.set(message.replace(matcher.group(), replacement));
 
                     ConfigurationSection action = worldFilter.getConfigurationSection("action");
                     if (action == null) return;
@@ -186,8 +243,10 @@ public class ModerationUtil {
                 }
             }
         });
-        return !passes.get();
+
+        return messageRef.get();
     }
+
 
     private int countCommonCharacters(String s1, String s2) {
         int[] count1 = new int[256];
@@ -258,7 +317,7 @@ public class ModerationUtil {
     }
 
     public void reloadConfig() {
-        YamlConfiguration config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
+        this.config = ConfigUtil.loadDataFile(plugin, "moderation.yml");
 
         this.isEnabled = config.getBoolean("moderation.enabled", false);
         this.checkSection = config.getConfigurationSection("moderation.checks");

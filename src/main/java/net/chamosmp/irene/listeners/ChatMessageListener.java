@@ -80,7 +80,7 @@ public class ChatMessageListener implements Listener {
             return;
         }
 
-        IreneChatRenderer renderer = new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, event.signedMessage().signature());
+        IreneChatRenderer renderer = new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, event.signedMessage().signature(), moderationUtil);
         event.renderer(renderer);
         if (messageMessaging != null) {
             messageMessaging.sendMessage(renderer.render(event.getPlayer(), event.getPlayer().displayName(), event.message(), event.getPlayer()));

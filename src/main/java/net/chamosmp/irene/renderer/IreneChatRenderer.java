@@ -7,6 +7,7 @@ import net.chamosmp.irene.model.FormatConfig;
 import net.chamosmp.irene.model.HoverConfig;
 import net.chamosmp.irene.util.ChatUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
+import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
 import net.chamosmp.sqdlib.util.LogType;
@@ -31,14 +32,17 @@ public class IreneChatRenderer implements ChatRenderer {
 
     private final SignedMessage.Signature signature;
 
+    private final ModerationUtil moderationUtil;
+
     private final Map<String, FormatConfig> formats = new HashMap<>();
     private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
-    public IreneChatRenderer(final IrenePlugin plugin, LuckPermsUtil luckPermsUtil, ChatUtil chatUtil, SignedMessage.Signature signature) {
+    public IreneChatRenderer(IrenePlugin plugin, LuckPermsUtil luckPermsUtil, ChatUtil chatUtil, SignedMessage.Signature signature, ModerationUtil moderationUtil) {
         this.plugin = plugin;
         this.luckPermsUtil = luckPermsUtil;
         this.chatUtil = chatUtil;
         this.signature = signature;
+        this.moderationUtil = moderationUtil;
 
         // Make sure the config has at least one format defined
         if (!plugin.getConfig().isConfigurationSection("chat-formats.formats")) {
@@ -131,6 +135,8 @@ public class IreneChatRenderer implements ChatRenderer {
         if (plugin.getConfig().getBoolean("pings.enabled", true)) {
             message = ColorUtil.parse(chatUtil.pingCheck(ColorUtil.deParse(message), plugin.getConfig().getString("pings.ping-character", "@")));
         }
+
+        message = ColorUtil.parse(moderationUtil.censorWordFilter(source, ColorUtil.deParse(message)));
 
         placeholders.put("prefix", prefix);
         placeholders.put("suffix", suffix);
