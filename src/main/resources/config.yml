@@ -35,6 +35,7 @@ emojis:
 
   items: true # When true it will allow players to do something like :ender_pearl:, and replace it with the ender pearl texture. Needs the root enabled as true
   player-heads: true # When true it will allow players to do something like :Chamogelastos: and replace it with the player head of Chamogelastos. Needs the root enabled as true
+  current-item: false # If players use "[item]", it will add the current item they're holding, with all of its metadata (name, lore, etc.)
 
 
 priority: HIGHEST

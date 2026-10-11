@@ -119,10 +119,12 @@ public class IreneChatRenderer implements ChatRenderer {
 
         if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
             message = ColorUtil.parse(ChatUtil.emojiPlaceholder(
+                    source,
                     ColorUtil.deParse(message),
                     plugin.getConfig().getString("emojis.character", ":"),
                     plugin.getConfig().getBoolean("emojis.items"),
-                    plugin.getConfig().getBoolean("emojis.player-heads")
+                    plugin.getConfig().getBoolean("emojis.player-heads"),
+                    plugin.getConfig().getBoolean("emojis.current-item")
             ));
         }
 
