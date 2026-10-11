@@ -54,6 +54,9 @@ permissions:
     children:
       permission.node.child: true
 
+  irene.pingtoggle:
+    default: not op
+
   irene.minimessage.bypass.default:
     default: op
   irene.minimessage.bypass.noninteractable:

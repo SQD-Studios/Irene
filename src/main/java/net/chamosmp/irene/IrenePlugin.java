@@ -5,6 +5,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.chamosmp.irene.commands.BroadcastCommandBrigadier;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
+import net.chamosmp.irene.commands.PingToggleCommandBrigadier;
 import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
 import net.chamosmp.irene.commands.message.MessageCommandManager;
 import net.chamosmp.irene.commands.message.RespondCommandBrigadier;
@@ -128,6 +129,15 @@ public class IrenePlugin extends JavaPlugin {
                         );
                         LoggerUtil.log(LogType.INFO, "Registered respond command");
                     }
+                }
+
+
+                if (getConfig().getBoolean("pings.toggle-ping.enabled")) {
+                    event.registrar().register(
+                            PingToggleCommandBrigadier.create(getConfig().getString("pings.toggle-ping.command", "pingtoggle"), this),
+                            "",
+                            getConfig().getStringList("pings.toggle-ping.aliases")
+                    );
                 }
             } catch (Exception e) {
                 throw new CommandRegisterException("Failed to register the commands!", e);

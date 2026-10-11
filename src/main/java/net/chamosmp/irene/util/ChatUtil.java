@@ -1,6 +1,7 @@
 package net.chamosmp.irene.util;
 
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.commands.PingToggleCommand;
 import net.chamosmp.sqdlib.paper.util.DialogUtil;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
@@ -9,6 +10,7 @@ import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -68,11 +70,20 @@ public class ChatUtil extends DeleteMessageUtil {
         String result = pingChar + key;
         Player player = Bukkit.getPlayerExact(key);
         if (player != null && player.isConnected()) {
-            result = plugin.getConfig().getString("pings.color", "<gold>") + result + "<reset>";
-            player.getScheduler().run(plugin, _ -> {
-                player.stopSound(sound);
-                player.playSound(player, sound, volume, pitch);
-            }, null);
+            boolean bypass = false;
+            if (player.getPersistentDataContainer().has(PingToggleCommand.PING_PDC)) {
+                bypass = Boolean.TRUE.equals(player.getPersistentDataContainer().get(PingToggleCommand.PING_PDC, PersistentDataType.BOOLEAN));
+            }
+            boolean soundOnly = plugin.getConfig().getBoolean("pings.toggle-ping.only-sound", true);
+
+            if (bypass && !soundOnly) {
+                result = plugin.getConfig().getString("pings.color", "<gold>") + result + "<reset>";
+            } else if (bypass) {
+                player.getScheduler().run(plugin, _ -> {
+                    player.stopSound(sound);
+                    player.playSound(player, sound, volume, pitch);
+                }, null);
+            }
         }
         return result;
     }

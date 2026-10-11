@@ -68,6 +68,19 @@ pings:
   ping-character: "@"
   chat-complete: true
   color: "<gold>" # What mini message color should the ping have?
+
+  toggle-ping:
+    enabled: true
+
+    command: "pingtoggle"
+    aliases:
+      - "toggleping"
+
+    toggle-message: "<green>You toggled your ping status"
+
+    # This means it'll still keep the formatting and just not play the sound
+    only-sound: true
+
   sound:
     name: 'block.note_block.bell' # The sound to play, to the player being pinged. You can see the minecraft sounds here: https://minecraft.wiki/w/Sounds.json#Sound_events
     volume: 1
