@@ -7,7 +7,7 @@ authors: [ "SQD Studios" ]
 description: ${description}
 version: ${version}
 
-api-version: 1.21
+api-version: "1.21"
 
 folia-supported: true
 
@@ -53,3 +53,11 @@ permissions:
     default: op
     children:
       permission.node.child: true
+
+  irene.minimessage.bypass.default:
+    default: op
+  irene.minimessage.bypass.noninteractable:
+    default: op
+  irene.minimessage.bypass.formattedtext:
+    default: op
+

@@ -109,6 +109,14 @@ public class IreneChatRenderer implements ChatRenderer {
                 break;
         }
 
+        if (source.hasPermission("irene.minimessage.bypass.default")) {
+            message = MiniMessage.miniMessage(MiniMessage.Preset.DEFAULT).deserialize(stringMessage);
+        } else if (source.hasPermission("irene.minimessage.bypass.formattedtext")) {
+            message = MiniMessage.miniMessage(MiniMessage.Preset.FORMATTED_TEXT).deserialize(stringMessage);
+        } else if (source.hasPermission("irene.minimessage.bypass.noninteractable")) {
+            message = MiniMessage.miniMessage(MiniMessage.Preset.NON_INTERACTABLE).deserialize(stringMessage);
+        }
+
         if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
             message = ColorUtil.parse(ChatUtil.emojiPlaceholder(
                     ColorUtil.deParse(message),
