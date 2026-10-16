@@ -43,9 +43,9 @@ dependencies {
 
 
     // Plugin Messaging
-    compileOnly("io.lettuce:lettuce-core:7.7.0.RELEASE")
-    compileOnly("io.nats:jnats:2.26.2")
-    compileOnly("com.rabbitmq:amqp-client:5.35.0")
+    compileOnly("io.lettuce:lettuce-core:7.9.0.RELEASE")
+    compileOnly("io.nats:jnats:2.26.4")
+    compileOnly("com.rabbitmq:amqp-client:5.37.0")
 }
 
 group = "net.chamosmp.irene"
