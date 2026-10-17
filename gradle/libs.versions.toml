@@ -1,7 +1,7 @@
 [versions]
 paper = "26.2.build.+"
 bstats = "3.2.1"
-sqdlib = "2.1.2"
+sqdlib = "3.2.0"
 
 placeholderapi = "2.12.3"
 luckperms = "5.5"
