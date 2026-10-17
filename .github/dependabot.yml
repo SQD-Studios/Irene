@@ -13,6 +13,10 @@ registries:
 
 updates:
   - package-ecosystem: "gradle" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/" # Location of package manifests\
+    registries:
+      - chamosmp
+      - eldonexus
+      - scarsz
     schedule:
       interval: "daily"
