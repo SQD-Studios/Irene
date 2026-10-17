@@ -6,7 +6,7 @@ io-papermc-paper-paper-api = "26.1.2.build.64-stable"
 me-clip-placeholderapi = "2.11.6"
 net-kyori-adventure-text-serializer-legacy = "4.24.0"
 net-luckperms-api = "5.4"
-org-projectlombok-lombok = "1.18.46"
+org-projectlombok-lombok = "1.18.48"
 
 [libraries]
 io-papermc-paper-paper-api = { module = "io.papermc.paper:paper-api", version.ref = "io-papermc-paper-paper-api" }
