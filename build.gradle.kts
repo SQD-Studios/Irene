@@ -23,29 +23,29 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly(libs.paper)
 
-    implementation("net.chamosmp.sqdlib:sqdlib-paper:2.1.2")
-    implementation("org.bstats:bstats-bukkit:3.2.1")
+    implementation(libs.sqdlib.paper)
+    implementation(libs.bstats.bukkit)
 
     // StrokkCommands
-    compileOnly("net.strokkur.commands:annotations-paper:2.3.0")
-    annotationProcessor("net.strokkur.commands:processor-paper:2.3.0")
+    compileOnly(libs.strokk.paper)
+    annotationProcessor(libs.strokk.paper.proccesor)
 
     // Plugin Dependencies
-    compileOnly("net.luckperms:api:5.5")
-    compileOnly("me.clip:placeholderapi:2.12.3")
+    compileOnly(libs.luckperms)
+    compileOnly(libs.placeholderapi)
 
     // Discord Integration
-    compileOnly("com.discordsrv:discordsrv:1.29.0")
-    compileOnly("net.essentialsx:EssentialsX:2.21.2")
-    compileOnly("net.essentialsx:EssentialsXDiscord:2.21.2")
+    compileOnly(libs.discordsrv)
+    compileOnly(libs.essx)
+    compileOnly(libs.essx.discord)
 
 
     // Plugin Messaging
-    compileOnly("io.lettuce:lettuce-core:7.9.0.RELEASE")
-    compileOnly("io.nats:jnats:2.26.4")
-    compileOnly("com.rabbitmq:amqp-client:5.37.0")
+    compileOnly(libs.lettuce)
+    compileOnly(libs.jnats)
+    compileOnly(libs.rabbitmq)
 }
 
 group = "net.chamosmp.irene"
