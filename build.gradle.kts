@@ -1,8 +1,9 @@
 plugins {
     id("java")
     id("maven-publish")
-    id("com.gradleup.shadow") version "9.6.1"
-    id("xyz.jpenilla.run-paper") version "3.1.0"
+
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.run.paper)
 }
 
 repositories {
@@ -14,9 +15,7 @@ repositories {
         url = uri("https://maven.chamosmp.net/releases")
     }
     maven("https://eldonexus.de/repository/maven-public/")
-    maven {
-        url = uri("https://repo.extendedclip.com/releases/")
-    }
+    maven("https://repo.extendedclip.com/releases/")
     maven("https://nexus.scarsz.me/content/groups/public/")
     maven("https://repo.essentialsx.net/releases/")
     mavenCentral()

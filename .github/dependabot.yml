@@ -1,5 +1,16 @@
 version: 2
 
+registries:
+  chamosmp:
+    type: maven-repository
+    url: https://maven.chamosmp.net/releases
+  eldonexus:
+    type: maven-repository
+    url: https://eldonexus.de/repository/maven-public
+  scarsz:
+    type: maven-repository
+    url: https://nexus.scarsz.me/content/groups/public
+
 updates:
   - package-ecosystem: "gradle" # See documentation for possible values
     directory: "/" # Location of package manifests

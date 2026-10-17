@@ -14,6 +14,10 @@ lettuce = "7.9.0.RELEASE"
 rabbitmq = "5.37.0"
 jnats = "2.26.4"
 
+
+shadow = "9.6.1"
+run-task = "3.1.0"
+
 [libraries]
 paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
@@ -32,3 +36,8 @@ strokk-paper-proccesor = { module = "net.strokkur.commands:processor-paper", ver
 lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 rabbitmq = { module = "com.rabbitmq:amqp-client", version.ref = "rabbitmq" }
 jnats = { module = "io.nats:jnats", version.ref = "jnats" }
+
+[plugins]
+
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-task" }
