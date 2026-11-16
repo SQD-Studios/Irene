@@ -10,7 +10,6 @@ import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
@@ -89,11 +88,7 @@ public class ChatUtil extends DeleteMessageUtil {
         return result;
     }
 
-    public static @NotNull String emojiPlaceholder(Player sender, @NotNull String message, @NotNull String emojiCharacter, boolean playerHeads, boolean items, boolean currentItem) {
-        if (currentItem && message.contains("[item]")) {
-            message = message.replace("[item]", currentItemPlaceholder(sender));
-        }
-
+    public static @NotNull String emojiPlaceholder(@NotNull String message, @NotNull String emojiCharacter, boolean playerHeads, boolean items) {
         if (message.contains(emojiCharacter)) {
             for (int i = message.indexOf(emojiCharacter); message.indexOf(emojiCharacter, i) != -1; i++) {
                 int second = message.indexOf(emojiCharacter, i + 1);
@@ -122,20 +117,6 @@ public class ChatUtil extends DeleteMessageUtil {
                 result = "<white><head:" + player.getName() + "></white>";
             }
         }
-        return result;
-    }
-
-    public static @NotNull String currentItemPlaceholder(Player player) {
-        ItemStack item = player.getEquipment().getItemInMainHand();
-        Material material = item.getType();
-
-        String result = "";
-        if (material.isBlock()) {
-            result = String.format("<sprite:blocks:block/%s></white>", material.name().toLowerCase());
-        } else if (material.isItem()) {
-            result = String.format("<sprite:items:item/%s></white>", material.name().toLowerCase());
-        }
-
         return result;
     }
 

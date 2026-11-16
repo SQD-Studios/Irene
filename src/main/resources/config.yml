@@ -127,5 +127,11 @@ join-and-leave-messages:
   join: "<yellow>%name% joined the game"
   leave: "<yellow>%name% left the game"
 
+ignore:
+  enabled: true
+
+  on-ignore: "<green>You've successfully ignored %toIgnore%"
+  on-unignore: "<green>You've successfully unignored %toIgnore%"
+
 messages:
   reloaded: "<green>Irene Reloaded."

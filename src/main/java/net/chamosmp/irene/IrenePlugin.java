@@ -7,7 +7,7 @@ import net.chamosmp.irene.commands.BroadcastCommandBrigadier;
 import net.chamosmp.irene.commands.IreneCommandBrigadier;
 import net.chamosmp.irene.commands.PingToggleCommandBrigadier;
 import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
-import net.chamosmp.irene.commands.message.MessageCommandManager;
+import net.chamosmp.irene.commands.CommandManager;
 import net.chamosmp.irene.commands.message.RespondCommandBrigadier;
 import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
@@ -100,7 +100,7 @@ public class IrenePlugin extends JavaPlugin {
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
             try {
-                MessageCommandManager manager = new MessageCommandManager(this, moderationUtil);
+                CommandManager manager = new CommandManager(this, moderationUtil);
                 IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager, chatUtil); // We know the parameter may be null
                 BroadcastCommandBrigadier.register(event.registrar(), broadcastConfig);
 

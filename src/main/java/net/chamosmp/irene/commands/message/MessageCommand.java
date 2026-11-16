@@ -1,6 +1,7 @@
 package net.chamosmp.irene.commands.message;
 
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.commands.CommandManager;
 import net.chamosmp.irene.commands.suggestions.NoVanishPlayers;
 import net.chamosmp.sqdlib.lang.value.DoubleValue;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
@@ -19,9 +20,9 @@ public class MessageCommand {
     private final IrenePlugin plugin;
 
 
-    private final MessageCommandManager storage;
+    private final CommandManager storage;
 
-    public MessageCommand(IrenePlugin plugin, MessageCommandManager storage) {
+    public MessageCommand(IrenePlugin plugin, CommandManager storage) {
         this.plugin = plugin;
 
         this.storage = storage;

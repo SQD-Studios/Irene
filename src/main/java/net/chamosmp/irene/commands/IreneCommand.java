@@ -2,7 +2,6 @@ package net.chamosmp.irene.commands;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.chamosmp.irene.IrenePlugin;
-import net.chamosmp.irene.commands.message.MessageCommandManager;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.util.ChatUtil;
@@ -24,10 +23,10 @@ public class IreneCommand {
     private final ModerationUtil moderationUtil;
     private final @Nullable MessageMessaging messageMessaging;
     private final LuckPermsUtil luckPermsUtil;
-    private final MessageCommandManager messageStorage;
+    private final CommandManager messageStorage;
     private final ChatUtil chatUtil;
 
-    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, MessageCommandManager messageStorage, ChatUtil chatUtil) {
+    public IreneCommand(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, CommandManager messageStorage, ChatUtil chatUtil) {
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
         this.messageMessaging = messageMessaging;

@@ -18,6 +18,8 @@ jnats = "2.26.4"
 shadow = "9.6.1"
 run-task = "3.1.0"
 
+modl = "1.0.1"
+
 [libraries]
 paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
@@ -36,6 +38,8 @@ strokk-paper-proccesor = { module = "net.strokkur.commands:processor-paper", ver
 lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 rabbitmq = { module = "com.rabbitmq:amqp-client", version.ref = "rabbitmq" }
 jnats = { module = "io.nats:jnats", version.ref = "jnats" }
+
+modl = {module = "net.chamosmp.modl.minecraft:api", version.ref = "modl"}
 
 [plugins]
 

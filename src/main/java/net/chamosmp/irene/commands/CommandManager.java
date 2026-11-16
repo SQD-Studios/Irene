@@ -1,4 +1,4 @@
-package net.chamosmp.irene.commands.message;
+package net.chamosmp.irene.commands;
 
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
@@ -7,24 +7,41 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageCommandManager {
+public class CommandManager {
 
     private final Plugin plugin;
+
+    // TODO Implement moderation on DMs
     private final ModerationUtil moderationUtil;
 
     public DoubleValueList<Player, Player> messageMap = DoubleValueList.of();
 
     public final List<Audience> spies = new ArrayList<>();
 
-    public MessageCommandManager(Plugin plugin, ModerationUtil moderationUtil) {
+    private final Map<Player, List<Player>> ignoredPlayers = new HashMap<>();
+
+    public CommandManager(Plugin plugin, ModerationUtil moderationUtil) {
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
+    }
+
+    public void addIgnoredPlayer(Player player, Player toIgnore) {
+        ignoredPlayers.put(player, toIgnore);
+    }
+
+    public void removeIgnoredPlayer(Player player, Player toRemove) {
+        ignoredPlayers.remove(player, toRemove);
+    }
+
+    public @Unmodifiable Map<Player, Player> getIgnoredPlayers() {
+        return ignoredPlayers;
     }
 
     public void sendMessage(Player receiver, Player sender, String message) {
@@ -49,14 +66,23 @@ public class MessageCommandManager {
 
         placeholders.put("sending_player_you", sender.getName());
         placeholders.put("receiving_player_you", youString);
-        receiver.sendMessage(ColorUtil.parse(
-                receiver,
-                format,
-                placeholders
-        ));
+
+        List<Player> ignoredPlayer = ignoredPlayers.get(sender);
+        if (ignoredPlayer != null && ignoredPlayer.contains(sender)) {
+            receiver.sendMessage(ColorUtil.parse(
+                    receiver,
+                    format,
+                    placeholders
+            ));
+        }
+
+        String ignored = ignoredPlayer != null && ignoredPlayer.contains(sender) ?
+                "(Ignored by" + receiver.getName() + ") " :
+                "";
+
         sendMessageToSpies(spies, ColorUtil.parse(
                 receiver,
-                "<red><b>ISPY<reset>| " + format,
+                "<red><b>ISPY<reset>| " + ignored + format,
                 placeholders
         ));
     }

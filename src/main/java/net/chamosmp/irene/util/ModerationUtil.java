@@ -2,6 +2,7 @@ package net.chamosmp.irene.util;
 
 import com.google.common.base.Strings;
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.modl.ModlModeration;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.ConfigUtil;
 import net.kyori.adventure.text.Component;
@@ -36,6 +37,7 @@ public class ModerationUtil {
     private final IrenePlugin plugin;
 
     private final static boolean IS_LITEBANS = Bukkit.getPluginManager().isPluginEnabled("LiteBans");
+    private static final boolean IS_MODL = Bukkit.getPluginManager().isPluginEnabled("ChamoSMP-modl");
 
     // Used for "spam protection"
     private final Map<UUID, Instant> oldMessageTime = new HashMap<>();
@@ -295,6 +297,8 @@ public class ModerationUtil {
                     case BAN -> {
                         if (IS_LITEBANS) {
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "ipban " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        } else if (IS_MODL) {
+                            ModlModeration.ban(player, reason, time);
                         } else {
                             player.ban(reason, duration, "Irene");
                         }
@@ -302,6 +306,8 @@ public class ModerationUtil {
                     case KICK -> {
                         if (IS_LITEBANS) {
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "kick " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        } else if (IS_MODL) {
+                            ModlModeration.kick(player, reason, time);
                         } else {
                             player.kick(ColorUtil.parse(player, reason));
                         }
@@ -309,6 +315,9 @@ public class ModerationUtil {
                     case MUTE -> {
                         if (IS_LITEBANS) {
                             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "ipmute " + player.getName() + liteBansTime + "--sender=Irene " + reason);
+                        }
+                        if (IS_MODL) {
+                            ModlModeration.mute(player, reason, time);
                         }
                     }
                 }

@@ -18,6 +18,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -67,6 +68,14 @@ public class IreneChatRenderer implements ChatRenderer {
         if (!(viewer instanceof Player)) {
             // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
             viewer = source;
+        }
+
+        if (plugin.getConfig().getBoolean("emojis.current-item")) {
+            ItemStack hand = source.getInventory().getItemInMainHand();
+            message = message.replaceText(i -> {
+                i.matchLiteral("[item]");
+                i.replacement(hand.displayName().hoverEvent(hand));
+            });
         }
 
         final String primaryGroup = luckPermsUtil.getPrimaryGroup(source);
@@ -123,12 +132,10 @@ public class IreneChatRenderer implements ChatRenderer {
 
         if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
             message = ColorUtil.parse(ChatUtil.emojiPlaceholder(
-                    source,
                     ColorUtil.deParse(message),
                     plugin.getConfig().getString("emojis.character", ":"),
                     plugin.getConfig().getBoolean("emojis.items"),
-                    plugin.getConfig().getBoolean("emojis.player-heads"),
-                    plugin.getConfig().getBoolean("emojis.current-item")
+                    plugin.getConfig().getBoolean("emojis.player-heads")
             ));
         }
 

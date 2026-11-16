@@ -34,6 +34,7 @@ dependencies {
     // Plugin Dependencies
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
+    compileOnly(libs.modl)
 
     // Discord Integration
     compileOnly(libs.discordsrv)

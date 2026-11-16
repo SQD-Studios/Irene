@@ -1,6 +1,7 @@
 package net.chamosmp.irene.commands.message;
 
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.commands.CommandManager;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.text.Component;
@@ -17,9 +18,9 @@ import java.util.Map;
 public class RespondCommand {
     private final IrenePlugin plugin;
 
-    private final MessageCommandManager storage;
+    private final CommandManager storage;
 
-    public RespondCommand(IrenePlugin plugin, MessageCommandManager storage) {
+    public RespondCommand(IrenePlugin plugin, CommandManager storage) {
         this.plugin = plugin;
 
         this.storage = storage;
