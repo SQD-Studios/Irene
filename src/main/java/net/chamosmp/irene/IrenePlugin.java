@@ -3,22 +3,22 @@ package net.chamosmp.irene;
 import github.scarsz.discordsrv.DiscordSRV;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import net.chamosmp.irene.commands.BroadcastCommandBrigadier;
-import net.chamosmp.irene.commands.IreneCommandBrigadier;
-import net.chamosmp.irene.commands.PingToggleCommandBrigadier;
+import net.chamosmp.irene.commands.*;
 import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
-import net.chamosmp.irene.commands.CommandManager;
 import net.chamosmp.irene.commands.message.RespondCommandBrigadier;
+import net.chamosmp.irene.commands.suggestions.LuckpermsGroupsImpl;
 import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.listeners.DebugListener;
+import net.chamosmp.irene.listeners.GeyserChatListener;
 import net.chamosmp.irene.listeners.JoinLeaveListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
 import net.chamosmp.irene.messaging.RedisMessage;
 import net.chamosmp.irene.model.RepeatedBroadcast;
+import net.chamosmp.irene.renderer.IreneChatRenderer;
 import net.chamosmp.irene.util.ChatUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
@@ -43,6 +43,8 @@ public class IrenePlugin extends JavaPlugin {
     private @Nullable MessageMessaging messageMessaging = null;
     private LuckPermsUtil luckPermsUtil;
     private ChatUtil chatUtil;
+
+    private CommandManager commandManager;
 
     private YamlConfiguration broadcastConfig;
 
@@ -69,9 +71,18 @@ public class IrenePlugin extends JavaPlugin {
         this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
         this.chatUtil = new ChatUtil(this, new DialogUtil(this));
+        this.commandManager = new CommandManager(this, moderationUtil);
 
-        new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil, chatUtil);
+        new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil, chatUtil, commandManager);
         new JoinLeaveListener(this, luckPermsUtil);
+
+        if (getConfig().getBoolean("geyser.secure-profile-bypass")) {
+            if (Bukkit.getPluginManager().isPluginEnabled("floodgate") && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+                new GeyserChatListener(this, new IreneChatRenderer(this, luckPermsUtil, chatUtil, null, moderationUtil, commandManager, false));
+            } else {
+                LoggerUtil.log(LogType.WARNING, "Floodgate and PacketEvents are not installed in the server! This won't allow bedrock players to chat without disabling enforced chat profiles");
+            }
+        }
 
         if (debug) {
             LoggerUtil.log(LogType.INFO, "Debug mode is enabled.");
@@ -100,8 +111,7 @@ public class IrenePlugin extends JavaPlugin {
     public void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
             try {
-                CommandManager manager = new CommandManager(this, moderationUtil);
-                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, manager, chatUtil); // We know the parameter may be null
+                IreneCommandBrigadier.register(event.registrar(), this, moderationUtil, messageMessaging, luckPermsUtil, commandManager, chatUtil); // We know the parameter may be null
                 BroadcastCommandBrigadier.register(event.registrar(), broadcastConfig);
 
                 if (getConfig().getBoolean("private-message.enabled", true)) {
@@ -109,7 +119,7 @@ public class IrenePlugin extends JavaPlugin {
                             MessageCommandBrigadier.create(
                                     getConfig().getString("private-message.name", "msg"),
                                     this,
-                                    manager
+                                    commandManager
                             ),
                             "",
                             getConfig().getStringList("private-message.aliases")
@@ -122,7 +132,7 @@ public class IrenePlugin extends JavaPlugin {
                                 RespondCommandBrigadier.create(
                                         getConfig().getString("private-message.respond.name", "r"),
                                         this,
-                                        manager
+                                        commandManager
                                 ),
                                 "",
                                 getConfig().getStringList("private-message.respond.aliases")
@@ -137,6 +147,15 @@ public class IrenePlugin extends JavaPlugin {
                             PingToggleCommandBrigadier.create(getConfig().getString("pings.toggle-ping.command", "pingtoggle"), this),
                             "",
                             getConfig().getStringList("pings.toggle-ping.aliases")
+                    );
+                }
+
+                if (getConfig().getBoolean("ignore.enabled")) {
+                    new LuckpermsGroupsImpl(luckPermsUtil);
+                    event.registrar().register(
+                            IgnoreCommandBrigadier.create(commandManager, this),
+                            "",
+                            List.of()
                     );
                 }
             } catch (Exception e) {

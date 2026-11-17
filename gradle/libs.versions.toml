@@ -7,6 +7,7 @@ placeholderapi = "2.12.3"
 luckperms = "5.5"
 essx = "2.21.2"
 dc-srv = "1.29.0"
+pe = "2.14.0"
 
 strokk-commands = "2.3.1"
 
@@ -39,7 +40,10 @@ lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 rabbitmq = { module = "com.rabbitmq:amqp-client", version.ref = "rabbitmq" }
 jnats = { module = "io.nats:jnats", version.ref = "jnats" }
 
-modl = {module = "net.chamosmp.modl.minecraft:api", version.ref = "modl"}
+modl = { module = "net.chamosmp.modl.minecraft:api", version.ref = "modl" }
+
+floodgate = { module = "org.geysermc.floodgate:api", version = "+" }
+packetevents = { module = "com.github.retrooper:packetevents-spigot", version.ref = "pe" }
 
 [plugins]
 

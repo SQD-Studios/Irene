@@ -194,8 +194,7 @@ public class ModerationUtil {
         return !passes.get();
     }
 
-    @SuppressWarnings("all")
-    public String censorWordFilter(Player player, String message) {
+    public String censorWordFilter(String message) {
         if (!isEnabled) return message;
         if (wordFilterSection == null) return message;
         if (!config.getBoolean("moderation.censor.enabled")) return message;
@@ -228,18 +227,10 @@ public class ModerationUtil {
                     if (!config.getBoolean("moderation.censor.match-censored-length")) {
                         length = config.getInt("moderation.censor.censor-char-length");
                     }
-                    String censorChar = config.getString("moderation.censor.censor-char");
+                    String censorChar = config.getString("moderation.censor.censor-char", "*");
                     String replacement = Strings.repeat(censorChar, length);
 
                     messageRef.set(message.replace(matcher.group(), replacement));
-
-                    ConfigurationSection action = worldFilter.getConfigurationSection("action");
-                    if (action == null) return;
-
-                    messagePlayer(player, action.getString("message", "Reason: You send a link"));
-                    PunishType.of(
-                            action.getString("action", "none")
-                    ).punish(player, plugin, action.getString("reason"), action.getInt("duration"));
 
                     break;
                 }

@@ -128,10 +128,19 @@ join-and-leave-messages:
   leave: "<yellow>%name% left the game"
 
 ignore:
+  # Currently this will delete the message for the player and it will have the:
+  # "This message has been deleted by the server"
   enabled: true
 
   on-ignore: "<green>You've successfully ignored %toIgnore%"
   on-unignore: "<green>You've successfully unignored %toIgnore%"
+
+geyser:
+  # Needs Floodgate and PacketEvents to be used
+  # This only works if enforced secure profile is on
+  # Allows Bedrock players to chat without disabling enforced secure profile
+  # This also means that the delete message features won't work on their messages
+  secure-profile-bypass: false
 
 messages:
   reloaded: "<green>Irene Reloaded."

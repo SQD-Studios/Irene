@@ -16,21 +16,27 @@ dependencies:
     LuckPerms:
       load: BEFORE
       required: true
-      join-classpath: true
     PlaceholderAPI:
       load: BEFORE
       required: false
-      join-classpath: true
     DiscordSRV:
       load: BEFORE
       required: false
-      join-classpath: true
     EssentialsDiscord:
       load: BEFORE
       required: false
-      join-classpath: true
     LiteBans:
       load: BEFORE
+      required: false
+      join-classpath: false
+    ChamoSMP-modl:
+      load: before
+      required: false
+    floodgate:
+      load: before
+      required: false
+    packetevents:
+      load: before
       required: false
       join-classpath: true
 
@@ -38,29 +44,21 @@ permissions:
   irene.admin:
     default: op
     children:
-      permission.node.child: true
-  irene.admin.spy:
-    default: op
-    children:
-      permission.node.child: true
-  irene.admin.reload:
-    default: op
-    children:
-      permission.node.child: true
+      irene.admin.spy: true
+      irene.admin.reload: true
+      irene.admin.clear: true
+      irene.admin.preview: true
+
   irene.broadcast:
     default: op
-  irene.admin.clear:
-    default: op
-    children:
-      permission.node.child: true
 
   irene.pingtoggle:
-    default: not op
+    default: true
 
   irene.minimessage.bypass.default:
-    default: op
+    default: false
   irene.minimessage.bypass.noninteractable:
-    default: op
+    default: false
   irene.minimessage.bypass.formattedtext:
-    default: op
+    default: false
 

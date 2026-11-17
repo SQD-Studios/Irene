@@ -25,6 +25,7 @@ public class CommandManager {
 
     public final List<Audience> spies = new ArrayList<>();
 
+    // TODO Add a persistent way to store
     private final Map<Player, List<Player>> ignoredPlayers = new HashMap<>();
 
     public CommandManager(Plugin plugin, ModerationUtil moderationUtil) {
@@ -33,14 +34,24 @@ public class CommandManager {
     }
 
     public void addIgnoredPlayer(Player player, Player toIgnore) {
-        ignoredPlayers.put(player, toIgnore);
+        List<Player> players = ignoredPlayers.get(player);
+        List<Player> newList = new ArrayList<>();
+        if (players != null) {
+            newList.addAll(players);
+        }
+        newList.add(toIgnore);
+        ignoredPlayers.put(player, newList);
     }
 
     public void removeIgnoredPlayer(Player player, Player toRemove) {
-        ignoredPlayers.remove(player, toRemove);
+        List<Player> players = ignoredPlayers.get(player);
+        if (players != null) {
+            players.remove(toRemove);
+            ignoredPlayers.remove(player, players);
+        }
     }
 
-    public @Unmodifiable Map<Player, Player> getIgnoredPlayers() {
+    public @Unmodifiable Map<Player, List<Player>> getIgnoredPlayers() {
         return ignoredPlayers;
     }
 

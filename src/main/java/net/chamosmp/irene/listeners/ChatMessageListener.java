@@ -3,6 +3,7 @@ package net.chamosmp.irene.listeners;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.event.player.ChatEvent;
 import net.chamosmp.irene.IrenePlugin;
+import net.chamosmp.irene.commands.CommandManager;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.renderer.IreneChatRenderer;
 import net.chamosmp.irene.util.ChatUtil;
@@ -31,14 +32,16 @@ public class ChatMessageListener implements Listener {
     private final @Nullable MessageMessaging messageMessaging;
     private final LuckPermsUtil luckPermsUtil;
     private final ChatUtil chatUtil;
+    private final CommandManager commandManager;
 
     @SuppressWarnings("deprecation") // Checks the plugins for debugging purposes
-    public ChatMessageListener(final IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, ChatUtil chatUtil) {
+    public ChatMessageListener(IrenePlugin plugin, ModerationUtil moderationUtil, @Nullable MessageMessaging messageMessaging, LuckPermsUtil luckPermsUtil, ChatUtil chatUtil, CommandManager commandManager) {
         this.plugin = plugin;
         this.moderationUtil = moderationUtil;
         this.messageMessaging = messageMessaging;
         this.luckPermsUtil = luckPermsUtil;
         this.chatUtil = chatUtil;
+        this.commandManager = commandManager;
 
         if (plugin.debug) {
             LoggerUtil.log(LogType.INFO, "Debug mode enabled, printing registered listeners for chat events.");
@@ -80,7 +83,7 @@ public class ChatMessageListener implements Listener {
             return;
         }
 
-        IreneChatRenderer renderer = new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, event.signedMessage().signature(), moderationUtil);
+        IreneChatRenderer renderer = new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, event.signedMessage(), moderationUtil, commandManager, true);
         event.renderer(renderer);
         if (messageMessaging != null) {
             messageMessaging.sendMessage(renderer.render(event.getPlayer(), event.getPlayer().displayName(), event.message(), event.getPlayer()));

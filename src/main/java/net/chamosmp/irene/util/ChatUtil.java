@@ -2,8 +2,10 @@ package net.chamosmp.irene.util;
 
 import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.commands.PingToggleCommand;
+import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.chamosmp.sqdlib.paper.util.DialogUtil;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Registry;
@@ -88,35 +90,40 @@ public class ChatUtil extends DeleteMessageUtil {
         return result;
     }
 
-    public static @NotNull String emojiPlaceholder(@NotNull String message, @NotNull String emojiCharacter, boolean playerHeads, boolean items) {
-        if (message.contains(emojiCharacter)) {
-            for (int i = message.indexOf(emojiCharacter); message.indexOf(emojiCharacter, i) != -1; i++) {
-                int second = message.indexOf(emojiCharacter, i + 1);
+    public static @NotNull Component emojiPlaceholder(@NotNull Component message, @NotNull String emojiCharacter, boolean playerHeads, boolean items) {
+        String rawText = ColorUtil.deParse(message);
+        if (rawText.contains(emojiCharacter)) {
+            for (int i = rawText.indexOf(emojiCharacter); rawText.indexOf(emojiCharacter, i) != -1; i++) {
+                int second = rawText.indexOf(emojiCharacter, i + 1);
                 if (i == -1 || second == -1) return message;
 
-                String key = message.substring(i + 1, second);
-                message = message.replace(emojiCharacter + key + emojiCharacter, keyEmojiPlaceholder(key, emojiCharacter, playerHeads, items));
+                String key = rawText.substring(i + 1, second);
+                message = message.replaceText(b -> {
+                    b.matchLiteral(emojiCharacter + key + emojiCharacter);
+                    b.replacement(keyEmojiPlaceholder(key, emojiCharacter, playerHeads, items));
+                });
             }
             return message;
         }
         return message;
     }
 
-    private static @NotNull String keyEmojiPlaceholder(@NotNull String key, @NotNull String emojiChar, boolean playerHeads, boolean items) {
-        String result = emojiChar + key + emojiChar;
+    private static @NotNull Component keyEmojiPlaceholder(@NotNull String key, @NotNull String emojiChar, boolean playerHeads, boolean items) {
+        Component result = Component.text(emojiChar + key + emojiChar);
         Material material = Material.getMaterial(key.toUpperCase());
         if (material != null && items) {
             if (material.isBlock()) {
-                result = "<white><sprite:blocks:block/" + key + "></white>";
+                result = ColorUtil.parse("<white><sprite:blocks:block/" + key + "></white>");
             } else if (material.isItem()) {
-                result = "<white><sprite:items:item/" + key + "></white>";
+                result = ColorUtil.parse("<white><sprite:items:item/" + key + "></white>");
             }
         } else {
             Player player = Bukkit.getPlayerExact(key);
             if (player != null && playerHeads) {
-                result = "<white><head:" + player.getName() + "></white>";
+                result = ColorUtil.parse("<white><head:" + player.getName() + "></white>");
             }
         }
+
         return result;
     }
 

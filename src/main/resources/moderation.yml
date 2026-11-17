@@ -2,6 +2,7 @@ moderation:
   enabled: true
 
   # This mostly applies to word filter
+  # Warning! Players can still see the original message so it's kinda useless
   censor: # If you don't want to block the messages, you can censor them
     enabled: true
 
@@ -18,8 +19,8 @@ moderation:
         - "(?i)http://"
         - "(?i)https://"
       exclusions:
-        # For example, let you allow to post the discord server link
-        #- "(?i)https://discord.gg/**"
+      # For example, let you allow to post the discord server link
+      #- "(?i)https://discord.gg/**"
       action:
         block-message: true # This will block the message in chat
 

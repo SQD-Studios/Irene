@@ -19,6 +19,7 @@ repositories {
     maven("https://nexus.scarsz.me/content/groups/public/")
     maven("https://repo.essentialsx.net/releases/")
     mavenCentral()
+    maven("https://repo.opencollab.dev/main/")
 }
 
 dependencies {
@@ -35,6 +36,10 @@ dependencies {
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.modl)
+
+    // Geyser Chat
+    compileOnly(libs.floodgate)
+    compileOnly(libs.packetevents)
 
     // Discord Integration
     compileOnly(libs.discordsrv)
@@ -88,9 +93,10 @@ tasks {
         downloadPlugins {
             modrinth("lKEzGugV", "2.12.3")
             modrinth("Vebnzrzj", "v5.5.53-bukkit")
+            modrinth("HYKaKraK", "2.14.0+spigot") // Packetevents
             //modrinth("UmLGoGij", "1.30.5") // DiscordSRV
         }
 
-        minecraftVersion("26.2")
+        minecraftVersion("26.3")
     }
 }
