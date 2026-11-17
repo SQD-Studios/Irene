@@ -54,7 +54,7 @@ dependencies {
 }
 
 group = "net.chamosmp.irene"
-version = "OB2-1.0.0"
+version = "OB3-1.0.0"
 description = "Irene, is a chat plugin, which extends to chat moderation, and linking chats between servers"
 java.sourceCompatibility = JavaVersion.VERSION_25
 
