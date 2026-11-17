@@ -5,11 +5,13 @@ import net.chamosmp.sqdlib.paper.util.LoggerUtil;
 import net.chamosmp.sqdlib.util.LogType;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
+import net.luckperms.api.model.user.User;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
@@ -83,7 +85,14 @@ public class LuckPermsUtil {
         return luckPerms;
     }
 
-    private @NotNull CachedMetaData getCachedMetaData(@NotNull Player player) {
-        return luckPerms.getPlayerAdapter(Player.class).getMetaData(player);
+    /**
+     * May return null if it couldn't find a {@link User} from the player's UUID
+     */
+    private @UnknownNullability CachedMetaData getCachedMetaData(@NotNull Player player) {
+        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        if (user != null)
+            return user.getCachedData().getMetaData();
+        else
+            return null;
     }
 }
