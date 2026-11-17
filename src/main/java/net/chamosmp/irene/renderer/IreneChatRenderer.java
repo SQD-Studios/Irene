@@ -20,6 +20,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.node.NodeType;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -89,8 +91,8 @@ public class IreneChatRenderer implements ChatRenderer {
             // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
             viewer = source;
         } else {
-            Map<Player, List<Player>> map = commandManager.getIgnoredPlayers();
-            List<Player> players = map.get(viewerPlayer);
+            Map<OfflinePlayer, List<OfflinePlayer>> map = commandManager.getIgnoredPlayers();
+            List<OfflinePlayer> players = map.get(viewerPlayer);
             if (players != null && players.contains(source)) {
                 if (signature != null)
                     viewerPlayer.deleteMessage(signature);
@@ -113,10 +115,12 @@ public class IreneChatRenderer implements ChatRenderer {
 
         if (plugin.getConfig().getBoolean("emojis.current-item")) {
             ItemStack hand = source.getInventory().getItemInMainHand();
-            message = message.replaceText(i -> {
-                i.matchLiteral("[item]");
-                i.replacement(hand.displayName().hoverEvent(hand));
-            });
+            if (hand.getType() != Material.AIR) {
+                message = message.replaceText(i -> {
+                    i.matchLiteral("[item]");
+                    i.replacement(hand.displayName().hoverEvent(hand));
+                });
+            }
         }
 
         String stringMessage = PlainTextComponentSerializer.plainText().serialize(message);

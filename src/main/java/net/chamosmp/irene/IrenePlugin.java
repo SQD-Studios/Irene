@@ -7,6 +7,7 @@ import net.chamosmp.irene.commands.*;
 import net.chamosmp.irene.commands.message.MessageCommandBrigadier;
 import net.chamosmp.irene.commands.message.RespondCommandBrigadier;
 import net.chamosmp.irene.commands.suggestions.LuckpermsGroupsImpl;
+import net.chamosmp.irene.datastore.IgnoredPlayersStore;
 import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
 import net.chamosmp.irene.listeners.ChatMessageListener;
@@ -32,6 +33,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -71,7 +73,11 @@ public class IrenePlugin extends JavaPlugin {
         this.luckPermsUtil = new LuckPermsUtil(this);
         this.moderationUtil = new ModerationUtil(this);
         this.chatUtil = new ChatUtil(this, new DialogUtil(this));
-        this.commandManager = new CommandManager(this, moderationUtil);
+        try {
+            this.commandManager = new CommandManager(this, new IgnoredPlayersStore(this), moderationUtil);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil, chatUtil, commandManager);
         new JoinLeaveListener(this, luckPermsUtil);

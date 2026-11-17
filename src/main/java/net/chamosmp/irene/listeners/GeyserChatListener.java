@@ -60,14 +60,17 @@ public class GeyserChatListener implements PacketListener {
             }
             ireneChatRenderer.setSignature(sm);
 
-            Component rendered = ireneChatRenderer.render(
-                    player,
-                    player.displayName(),
-                    Component.text(message),
-                    player
-            );
-            sm.setMessage(rendered);
-            Bukkit.getServer().sendMessage(sm, ChatType.CHAT.bind(Component.text(message)));
+            Bukkit.getServer().forEachAudience(audience -> {
+                Component rendered = ireneChatRenderer.render(
+                        player,
+                        player.displayName(),
+                        Component.text(message),
+                        audience
+                );
+                sm.setMessage(rendered);
+                if (!rendered.equals(Component.empty()))
+                    audience.sendMessage(sm, ChatType.CHAT.bind(Component.text(message)));
+            });
         });
     }
 }

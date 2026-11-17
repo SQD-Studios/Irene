@@ -110,7 +110,11 @@ public class ChatUtil extends DeleteMessageUtil {
 
     private static @NotNull Component keyEmojiPlaceholder(@NotNull String key, @NotNull String emojiChar, boolean playerHeads, boolean items) {
         Component result = Component.text(emojiChar + key + emojiChar);
-        Material material = Material.getMaterial(key.toUpperCase());
+
+        Material material = null;
+        if (!key.toLowerCase().startsWith("legacy_")) {
+            material = Material.getMaterial(key.toUpperCase());
+        }
         if (material != null && items) {
             if (material.isBlock()) {
                 result = ColorUtil.parse("<white><sprite:blocks:block/" + key + "></white>");

@@ -1,10 +1,12 @@
 package net.chamosmp.irene.commands;
 
+import net.chamosmp.irene.datastore.IgnoredPlayersStore;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.lang.value.DoubleValueList;
 import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Unmodifiable;
@@ -17,6 +19,7 @@ import java.util.Map;
 public class CommandManager {
 
     private final Plugin plugin;
+    private final IgnoredPlayersStore ignoredPlayersStore;
 
     // TODO Implement moderation on DMs
     private final ModerationUtil moderationUtil;
@@ -25,34 +28,53 @@ public class CommandManager {
 
     public final List<Audience> spies = new ArrayList<>();
 
-    // TODO Add a persistent way to store
-    private final Map<Player, List<Player>> ignoredPlayers = new HashMap<>();
+    private final Map<OfflinePlayer, List<OfflinePlayer>> ignored = new HashMap<>();
 
-    public CommandManager(Plugin plugin, ModerationUtil moderationUtil) {
+    public CommandManager(Plugin plugin, IgnoredPlayersStore ignoredPlayersStore, ModerationUtil moderationUtil) {
         this.plugin = plugin;
+        this.ignoredPlayersStore = ignoredPlayersStore;
         this.moderationUtil = moderationUtil;
+
+
+        ignored.putAll(reloadIgnoredPlayers());
     }
 
     public void addIgnoredPlayer(Player player, Player toIgnore) {
-        List<Player> players = ignoredPlayers.get(player);
-        List<Player> newList = new ArrayList<>();
-        if (players != null) {
-            newList.addAll(players);
+        try {
+            ignoredPlayersStore.add(player, toIgnore);
+
+            List<OfflinePlayer> current = ignored.get(player);
+            List<OfflinePlayer> newPls = new ArrayList<>();
+            if (current != null) {
+                newPls.addAll(current);
+            }
+            newPls.add(toIgnore);
+            ignored.put(player, newPls);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        newList.add(toIgnore);
-        ignoredPlayers.put(player, newList);
     }
 
     public void removeIgnoredPlayer(Player player, Player toRemove) {
-        List<Player> players = ignoredPlayers.get(player);
-        if (players != null) {
-            players.remove(toRemove);
-            ignoredPlayers.remove(player, players);
+        try {
+            ignoredPlayersStore.remove(player, toRemove);
+            ignored.remove(toRemove);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public @Unmodifiable Map<Player, List<Player>> getIgnoredPlayers() {
-        return ignoredPlayers;
+    public @Unmodifiable Map<OfflinePlayer, List<OfflinePlayer>> getIgnoredPlayers() {
+        return ignored;
+    }
+
+    public Map<OfflinePlayer, List<OfflinePlayer>> reloadIgnoredPlayers() {
+        try {
+            return ignoredPlayersStore.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void sendMessage(Player receiver, Player sender, String message) {
@@ -78,7 +100,7 @@ public class CommandManager {
         placeholders.put("sending_player_you", sender.getName());
         placeholders.put("receiving_player_you", youString);
 
-        List<Player> ignoredPlayer = ignoredPlayers.get(sender);
+        List<OfflinePlayer> ignoredPlayer = ignored.get(sender);
         if (ignoredPlayer != null && ignoredPlayer.contains(sender)) {
             receiver.sendMessage(ColorUtil.parse(
                     receiver,

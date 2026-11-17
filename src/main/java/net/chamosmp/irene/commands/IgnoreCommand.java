@@ -4,6 +4,7 @@ import net.chamosmp.sqdlib.paper.util.ColorUtil;
 import net.strokkur.commands.Command;
 import net.strokkur.commands.Executes;
 import net.strokkur.commands.paper.Executor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -23,9 +24,9 @@ public class IgnoreCommand {
 
     @Executes
     public void execute(@Executor Player sender, Player toIgnore) {
-        Map<Player, List<Player>> map = commandManager.getIgnoredPlayers();
+        Map<OfflinePlayer, List<OfflinePlayer>> map = commandManager.getIgnoredPlayers();
 
-        List<Player> players = map.get(sender);
+        List<OfflinePlayer> players = map.get(sender);
         if (players == null || !players.contains(toIgnore)) {
             commandManager.addIgnoredPlayer(sender, toIgnore);
             sender.sendMessage(ColorUtil.parse(sender, plugin.getConfig().getString("ignore.on-ignore", ""), Map.of("toIgnore", toIgnore.getName())));
