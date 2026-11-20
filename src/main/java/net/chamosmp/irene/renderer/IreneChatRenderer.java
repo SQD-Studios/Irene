@@ -17,36 +17,31 @@ import net.kyori.adventure.chat.SignedMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.luckperms.api.model.group.Group;
-import net.luckperms.api.node.NodeType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Objects;
 
 public class IreneChatRenderer implements ChatRenderer {
 
     private final IrenePlugin plugin;
     private final LuckPermsUtil luckPermsUtil;
     private final ChatUtil chatUtil;
+    private final CommandManager commandManager;
+    private final ModerationUtil moderationUtil;
 
     private @Nullable SignedMessage signature;
 
-    private final ModerationUtil moderationUtil;
+    private @Nullable FormatConfig defaultFormatConfig;
 
-    private final CommandManager commandManager;
-
-    private final Map<String, FormatConfig> formats = new HashMap<>();
     private static final boolean IS_PAPI_ENABLED = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
 
     private final boolean shouldAddDeleteButton;
@@ -66,40 +61,27 @@ public class IreneChatRenderer implements ChatRenderer {
             throw new IllegalStateException("Chat formats are not defined in the config.");
         }
 
-        ConfigurationSection formatsSection = plugin.getConfig().getConfigurationSection("chat-formats.formats");
-        if (formatsSection != null) {
-            formatsSection.getKeys(false).forEach(key -> {
-                String formatString = plugin.getConfig().getString("chat-formats.formats." + key);
-                if (formatString != null) {
-                    formats.put(key, new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                            plugin.getConfig().getString("chat-formats.hover." + key + ".click-command", plugin.getConfig().getString("chat-formats.hover.default.click-command", null)),
-                            plugin.getConfig().getString("chat-formats.hover." + key + ".message", plugin.getConfig().getString("chat-formats.hover.default.message", null))
-                    )));
-                }
-            });
+        if (plugin.getConfig().isConfigurationSection("chat-formats.formats.default")) {
+            String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
+            if (formatString != null) {
+                defaultFormatConfig = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
+                        plugin.getConfig().getString("chat-formats.hover.default.click-command", plugin.getConfig().getString("chat-formats.hover.default.click-command", null)),
+                        plugin.getConfig().getString("chat-formats.hover.default.message", plugin.getConfig().getString("chat-formats.hover.default.message", null))
+                ));
+            }
         }
     }
 
-    @SuppressWarnings("")
     public void setSignature(@Nullable SignedMessage signature) {
         this.signature = signature;
     }
 
-    @Override
-    public @NonNull Component render(@NotNull Player source, @NotNull Component sourceDisplayName, @NotNull Component message, @NotNull Audience viewer) {
-        if (!(viewer instanceof Player viewerPlayer)) {
-            // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
-            viewer = source;
-        } else {
-            Map<OfflinePlayer, List<OfflinePlayer>> map = commandManager.getIgnoredPlayers();
-            List<OfflinePlayer> players = map.get(viewerPlayer);
-            if (players != null && players.contains(source)) {
-                if (signature != null)
-                    viewerPlayer.deleteMessage(signature);
-                return Component.empty();
-            }
-        }
-
+    /**
+     * This renders the message once, when a message is sent so it isn't rendering the message on every player which views it which may slow the message if the server has a lot of players
+     * (Which is rare with my plugins). For certain features like chat reporting and relational placeholders it will still render a part of it for every player (which uses less
+     * resources than the whole message)
+     */
+    public @NonNull Component render(@NonNull Player source, @NonNull Component message) {
         if (plugin.getConfig().getBoolean("chat-heads")) {
             String type = plugin.getConfig().getString("chat-heads.type", "").toLowerCase();
             if ("message".equals(type)) {
@@ -162,22 +144,40 @@ public class IreneChatRenderer implements ChatRenderer {
             );
         }
 
-        if (signature != null && shouldAddDeleteButton)
-            message = message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source, viewer));
-
         final String primaryGroup = luckPermsUtil.getPrimaryGroup(source);
         if (primaryGroup == null || primaryGroup.isEmpty()) {
             LoggerUtil.log(LogType.WARNING, "Player " + source.getName() + " has no primary group set.");
             return Component.empty();
         }
 
-        Component format = formats.getOrDefault(primaryGroup, formats.get("default")).getFormat();
+        FormatConfig g = null;
+        if (plugin.getConfig().isConfigurationSection("chat-formats.formats." + primaryGroup)) {
+            String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
+            if (formatString != null) {
+                g = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
+                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".click-command", plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".click-command", null)),
+                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".message", plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".message", null))
+                ));
+            }
+        }
+
+        FormatConfig config;
+        if (defaultFormatConfig != null) {
+            config = Objects.requireNonNullElse(g, defaultFormatConfig);
+        } else {
+            config = g;
+        }
+
+        if (config == null) {
+            LoggerUtil.log(LogType.WARNING, "Could not find format for player, sending the processed message " + source.getName());
+            return message;
+        }
+
+        Component format = config.getFormat();
         String stringFormat = ColorUtil.deParse(format);
 
         if (IS_PAPI_ENABLED) {
-            String replacement = PlaceholderAPI.setPlaceholders(source, stringFormat);
-            replacement = PlaceholderAPI.setRelationalPlaceholders(source, (Player) viewer, replacement);
-            stringFormat = replacement;
+            stringFormat = PlaceholderAPI.setPlaceholders(source, stringFormat);
         }
 
         final Map<String, String> placeholders = new HashMap<>();
@@ -210,123 +210,28 @@ public class IreneChatRenderer implements ChatRenderer {
         }
     }
 
-    public @NonNull Component preview(@Nullable Player source, Component message, String group) {
-        if (plugin.getConfig().getBoolean("chat-heads") && source != null) {
-            String type = plugin.getConfig().getString("chat-heads.type", "").toLowerCase();
-            if ("message".equals(type)) {
-                message = ColorUtil.parse("<head:" + source.getName() + ">").append(message);
-            } else if ("name".equals(type)) {
-                message = message.replaceText(b -> {
-                            b.matchLiteral(source.getName());
-                            b.replacement(ColorUtil.parse("<head:" + source.getName() + ">" + source.getName()));
-                        }
-                );
+    @Override
+    public @NonNull Component render(@NonNull Player source, @NonNull Component sourceDisplayName, @NonNull Component message, @NonNull Audience viewer) {
+        if (!(viewer instanceof Player viewerPlayer)) {
+            // If the viewer is not a player (e.g., console), we can just use the source as the viewer for PlaceholderAPI
+            viewer = source;
+        } else {
+            Map<OfflinePlayer, List<OfflinePlayer>> map = commandManager.getIgnoredPlayers();
+            List<OfflinePlayer> players = map.get(viewerPlayer);
+            if (players != null && players.contains(source)) {
+                if (signature != null)
+                    viewerPlayer.deleteMessage(signature);
+                return Component.empty();
             }
         }
 
-        if (plugin.getConfig().getBoolean("emojis.current-item") && source != null) {
-            ItemStack hand = source.getInventory().getItemInMainHand();
-            message = message.replaceText(i -> {
-                i.matchLiteral("[item]");
-                i.replacement(hand.displayName().hoverEvent(hand));
-            });
-        }
-
-        String stringMessage = PlainTextComponentSerializer.plainText().serialize(message);
-        switch (plugin.getConfig().getString("minimessage-formatting", "NONE").toUpperCase()) {
-            case "NON_INTERACTABLE":
-                message = MiniMessage.miniMessage(MiniMessage.Preset.NON_INTERACTABLE).deserialize(stringMessage);
-                break;
-            case "FORMATTED_TEXT":
-                message = MiniMessage.miniMessage(MiniMessage.Preset.FORMATTED_TEXT).deserialize(stringMessage);
-                break;
-            case "DEFAULT":
-                message = MiniMessage.miniMessage(MiniMessage.Preset.DEFAULT).deserialize(stringMessage);
-                break;
-            default:
-                break;
-        }
-
-        if (source != null) {
-            if (source.hasPermission("irene.minimessage.bypass.default")) {
-                message = MiniMessage.miniMessage(MiniMessage.Preset.DEFAULT).deserialize(stringMessage);
-            } else if (source.hasPermission("irene.minimessage.bypass.formattedtext")) {
-                message = MiniMessage.miniMessage(MiniMessage.Preset.FORMATTED_TEXT).deserialize(stringMessage);
-            } else if (source.hasPermission("irene.minimessage.bypass.noninteractable")) {
-                message = MiniMessage.miniMessage(MiniMessage.Preset.NON_INTERACTABLE).deserialize(stringMessage);
-            }
-        }
-
-        if (plugin.getConfig().getBoolean("pings.enabled", true)) {
-            message = ColorUtil.parse(chatUtil.pingCheck(ColorUtil.deParse(message), plugin.getConfig().getString("pings.ping-character", "@")));
-        }
-
-        message = ColorUtil.parse(moderationUtil.censorWordFilter(ColorUtil.deParse(message)));
-
-
-        if (plugin.getConfig().getBoolean("emojis.enabled", true)) {
-            message = ChatUtil.emojiPlaceholder(
-                    message,
-                    plugin.getConfig().getString("emojis.character", ":"),
-                    plugin.getConfig().getBoolean("emojis.items"),
-                    plugin.getConfig().getBoolean("emojis.player-heads")
-            );
-        }
-
-        Component format = formats.getOrDefault(group, formats.get("default")).getFormat();
-        String stringFormat = ColorUtil.deParse(format);
+        if (signature != null && shouldAddDeleteButton)
+            message = message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source, viewer));
 
         if (IS_PAPI_ENABLED) {
-            String replacement = PlaceholderAPI.setPlaceholders(source, stringFormat);
-            replacement = PlaceholderAPI.setRelationalPlaceholders(source, source, replacement);
-            stringFormat = replacement;
+            message = ColorUtil.parse(PlaceholderAPI.setRelationalPlaceholders(source, (Player) viewer, ColorUtil.deParse(message)));
         }
 
-        final Map<String, String> placeholders = new HashMap<>();
-        Group groupLp = luckPermsUtil.getLuckPerms().getGroupManager().getGroup(group);
-
-        AtomicReference<String> prefix = new AtomicReference<>("");
-        AtomicReference<String> suffix = new AtomicReference<>("");
-
-        if (groupLp != null) {
-            groupLp.getNodes().forEach(node -> {
-                if (node.getType() == NodeType.PREFIX) {
-                    prefix.set(node.getKey());
-                } else if (node.getType() == NodeType.SUFFIX) {
-                    suffix.set(node.getKey());
-                }
-            });
-        } else if (source != null) {
-            source.sendMessage(ColorUtil.parse("<red>Could not find Luckperms group with that name. Continuing with empty Prefix and Suffix"));
-        }
-
-        placeholders.put("prefix", prefix.get());
-        placeholders.put("suffix", suffix.get());
-        placeholders.put("message", ColorUtil.deParse(message));
-        if (source != null) {
-            placeholders.put("name", source.getName());
-        }
-        placeholders.put("group", group);
-
-        // Find meta tag references %meta-key% and replace them with their values
-        if (source != null) {
-            for (Map.Entry<String, List<String>> meta : luckPermsUtil.getMeta(source).entrySet()) {
-                String key = meta.getKey();
-                List<String> values = meta.getValue();
-                if (values.isEmpty()) {
-                    continue;
-                }
-                // We only map the first value for each meta key
-                String value = values.getFirst();
-                String placeholder = "%" + key + "%";
-                placeholders.put(placeholder, value);
-            }
-        }
-
-        if (plugin.getConfig().getBoolean("chat-formats.enabled")) {
-            return ColorUtil.parse(source, stringFormat, placeholders);
-        } else {
-            return message;
-        }
+        return message;
     }
 }

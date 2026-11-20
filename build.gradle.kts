@@ -37,7 +37,7 @@ dependencies {
     compileOnly(libs.placeholderapi)
     compileOnly(libs.modl)
 
-    // Geyser Chat
+    // Geyser Chat / Chat reporting
     compileOnly(libs.floodgate)
     compileOnly(libs.packetevents)
 
@@ -96,7 +96,7 @@ tasks {
             modrinth("HYKaKraK", "2.14.0+spigot") // Packetevents
             //modrinth("UmLGoGij", "1.30.5") // DiscordSRV
         }
-
         minecraftVersion("26.3")
     }
+    runPaper.folia.registerTask()
 }

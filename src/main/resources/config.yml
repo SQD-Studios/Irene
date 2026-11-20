@@ -142,5 +142,10 @@ geyser:
   # This also means that the delete message features won't work on their messages
   secure-profile-bypass: false
 
+# This only works if PacketEvents is installed
+# This also does what Geyser Chat does so you don't need it enabled
+# This also means that features which use secure messages won't work (e.g., chat deletion)
+disable-chat-reporting: false
+
 messages:
   reloaded: "<green>Irene Reloaded."

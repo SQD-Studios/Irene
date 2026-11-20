@@ -11,6 +11,7 @@ import net.chamosmp.irene.util.LuckPermsUtil;
 import net.chamosmp.irene.util.ModerationUtil;
 import net.chamosmp.sqdlib.paper.util.LoggerUtil;
 import net.chamosmp.sqdlib.util.LogType;
+import net.kyori.adventure.text.Component;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -84,9 +85,11 @@ public class ChatMessageListener implements Listener {
         }
 
         IreneChatRenderer renderer = new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, event.signedMessage(), moderationUtil, commandManager, true);
+        Component renderedNoViewer = renderer.render(event.getPlayer(), event.originalMessage());
+        event.message(renderedNoViewer);
         event.renderer(renderer);
         if (messageMessaging != null) {
-            messageMessaging.sendMessage(renderer.render(event.getPlayer(), event.getPlayer().displayName(), event.message(), event.getPlayer()));
+            messageMessaging.sendMessage(renderedNoViewer);
         }
     }
 

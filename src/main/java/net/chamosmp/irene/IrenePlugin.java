@@ -10,10 +10,7 @@ import net.chamosmp.irene.commands.suggestions.LuckpermsGroupsImpl;
 import net.chamosmp.irene.datastore.IgnoredPlayersStore;
 import net.chamosmp.irene.discord.DiscordSRVIntegration;
 import net.chamosmp.irene.discord.EssentialsDiscordIntegration;
-import net.chamosmp.irene.listeners.ChatMessageListener;
-import net.chamosmp.irene.listeners.DebugListener;
-import net.chamosmp.irene.listeners.GeyserChatListener;
-import net.chamosmp.irene.listeners.JoinLeaveListener;
+import net.chamosmp.irene.listeners.*;
 import net.chamosmp.irene.messaging.MessageMessaging;
 import net.chamosmp.irene.messaging.NatsMessage;
 import net.chamosmp.irene.messaging.RabbitMessage;
@@ -58,7 +55,7 @@ public class IrenePlugin extends JavaPlugin {
         new Metrics(this, 34212);
 
         if (!getDataFolder().exists()) {
-            getDataFolder().mkdir();
+            getDataFolder().mkdirs();
         }
         ConfigUtil.loadOrAdapt(this, "config.yml", List.of("chat-formats."));
 
@@ -82,11 +79,17 @@ public class IrenePlugin extends JavaPlugin {
         new ChatMessageListener(this, moderationUtil, messageMessaging, luckPermsUtil, chatUtil, commandManager);
         new JoinLeaveListener(this, luckPermsUtil);
 
-        if (getConfig().getBoolean("geyser.secure-profile-bypass")) {
+        if (getConfig().getBoolean("disable-chat-reporting")) {
+            if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+                new ChatReportListener(this, new IreneChatRenderer(this, luckPermsUtil, chatUtil, null, moderationUtil, commandManager, false));
+            } else {
+                LoggerUtil.log(LogType.WARNING, "PacketEvents is not installed! We cannot disable chat reporting until this issue is resolved");
+            }
+        } else if (getConfig().getBoolean("geyser.secure-profile-bypass")) {
             if (Bukkit.getPluginManager().isPluginEnabled("floodgate") && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
                 new GeyserChatListener(this, new IreneChatRenderer(this, luckPermsUtil, chatUtil, null, moderationUtil, commandManager, false));
             } else {
-                LoggerUtil.log(LogType.WARNING, "Floodgate and PacketEvents are not installed in the server! This won't allow bedrock players to chat without disabling enforced chat profiles");
+                LoggerUtil.log(LogType.WARNING, "Floodgate and/or PacketEvents are not installed in the server! This won't allow bedrock players to chat without disabling enforced chat profiles");
             }
         }
 

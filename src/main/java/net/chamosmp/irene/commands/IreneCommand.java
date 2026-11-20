@@ -6,7 +6,7 @@ import net.chamosmp.irene.IrenePlugin;
 import net.chamosmp.irene.commands.suggestions.LuckpermsGroups;
 import net.chamosmp.irene.listeners.ChatMessageListener;
 import net.chamosmp.irene.messaging.MessageMessaging;
-import net.chamosmp.irene.renderer.IreneChatRenderer;
+import net.chamosmp.irene.renderer.PreviewRenderer;
 import net.chamosmp.irene.util.ChatUtil;
 import net.chamosmp.irene.util.DeleteMessageUtil;
 import net.chamosmp.irene.util.LuckPermsUtil;
@@ -90,7 +90,7 @@ public class IreneCommand {
 
         commandSender.sendMessage(
                 ColorUtil.parse("<red>Irene Preview| ").append(
-                        new IreneChatRenderer(plugin, luckPermsUtil, chatUtil, null, moderationUtil, messageStorage, false).preview(p, Component.text(message), group)
+                        new PreviewRenderer(plugin, luckPermsUtil, chatUtil, moderationUtil).preview(p, Component.text(message), group)
                 )
         );
     }
