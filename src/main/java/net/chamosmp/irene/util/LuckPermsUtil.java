@@ -11,7 +11,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
@@ -88,11 +87,11 @@ public class LuckPermsUtil {
     /**
      * May return null if it couldn't find a {@link User} from the player's UUID
      */
-    private @UnknownNullability CachedMetaData getCachedMetaData(@NotNull Player player) {
+    private @NotNull CachedMetaData getCachedMetaData(@NotNull Player player) {
         User user = luckPerms.getUserManager().getUser(player.getUniqueId());
         if (user != null)
             return user.getCachedData().getMetaData();
         else
-            return null;
+            return luckPerms.getPlayerAdapter(Player.class).getMetaData(player);
     }
 }
