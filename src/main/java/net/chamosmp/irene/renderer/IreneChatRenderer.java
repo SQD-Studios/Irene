@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class IreneChatRenderer implements ChatRenderer {
 
@@ -61,12 +60,12 @@ public class IreneChatRenderer implements ChatRenderer {
             throw new IllegalStateException("Chat formats are not defined in the config.");
         }
 
-        if (plugin.getConfig().isConfigurationSection("chat-formats.formats.default")) {
+        if (plugin.getConfig().get("chat-formats.formats.default") != null) {
             String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
             if (formatString != null) {
                 defaultFormatConfig = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover.default.click-command", plugin.getConfig().getString("chat-formats.hover.default.click-command", null)),
-                        plugin.getConfig().getString("chat-formats.hover.default.message", plugin.getConfig().getString("chat-formats.hover.default.message", null))
+                        plugin.getConfig().getString("chat-formats.hover.default.click-command", null),
+                        plugin.getConfig().getString("chat-formats.hover.default.message", null)
                 ));
             }
         }
@@ -150,27 +149,24 @@ public class IreneChatRenderer implements ChatRenderer {
             return Component.empty();
         }
 
-        FormatConfig g = null;
-        if (plugin.getConfig().isConfigurationSection("chat-formats.formats." + primaryGroup)) {
-            String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
-            if (formatString != null) {
-                g = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".click-command", plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".click-command", null)),
-                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".message", plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".message", null))
-                ));
-            }
-        }
-
         FormatConfig config;
-        if (defaultFormatConfig != null) {
-            config = Objects.requireNonNullElse(g, defaultFormatConfig);
+        if (plugin.getConfig().get("chat-formats.formats." + primaryGroup) != null) {
+            String formatString = plugin.getConfig().getString("chat-formats.formats." + primaryGroup, null);
+            if (formatString != null) {
+                config = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
+                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".click-command", null),
+                        plugin.getConfig().getString("chat-formats.hover." + primaryGroup + ".message", null)
+                ));
+            } else {
+                config = defaultFormatConfig;
+            }
         } else {
-            config = g;
+            config = defaultFormatConfig;
         }
 
         if (config == null) {
-            LoggerUtil.log(LogType.WARNING, "Could not find format for player, sending the processed message " + source.getName());
-            return message;
+            LoggerUtil.log(LogType.WARNING, "Could not find format for player, sending the processed message for " + source.getName());
+            return source.displayName().append(ColorUtil.parse(" <gray>»</gray> ")).append(message);
         }
 
         Component format = config.getFormat();
@@ -206,7 +202,7 @@ public class IreneChatRenderer implements ChatRenderer {
         if (plugin.getConfig().getBoolean("chat-formats.enabled")) {
             return ColorUtil.parse(source, stringFormat, placeholders);
         } else {
-            return message;
+            return ChatRenderer.defaultRenderer().render(source, source.displayName(), message, Bukkit.getConsoleSender());
         }
     }
 

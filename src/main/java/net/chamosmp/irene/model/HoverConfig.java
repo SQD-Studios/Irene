@@ -11,7 +11,7 @@ public record HoverConfig(
         @Nullable String hoverMessage
 ) {
     public Component getCompletedHover() {
-        if (command == null || hoverMessage == null) return ColorUtil.parse("");
+        if (command == null || hoverMessage == null) return Component.empty();
         return ColorUtil.parse(String.format("<hover:show_text:%s><click:suggest_command:%s>", '"' + hoverMessage + '"', "/" + command));
     }
 }

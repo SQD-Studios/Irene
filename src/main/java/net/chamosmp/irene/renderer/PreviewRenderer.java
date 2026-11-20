@@ -15,6 +15,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.node.NodeType;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -24,7 +25,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PreviewRenderer {
@@ -43,12 +43,12 @@ public class PreviewRenderer {
         this.chatUtil = chatUtil;
         this.moderationUtil = moderationUtil;
 
-        if (plugin.getConfig().isConfigurationSection("chat-formats.formats.default")) {
+        if (plugin.getConfig().get("chat-formats.formats.default") != null) {
             String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
             if (formatString != null) {
                 defaultFormatConfig = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover.default.click-command", plugin.getConfig().getString("chat-formats.hover.default.click-command", null)),
-                        plugin.getConfig().getString("chat-formats.hover.default.message", plugin.getConfig().getString("chat-formats.hover.default.message", null))
+                        plugin.getConfig().getString("chat-formats.hover.default.click-command", null),
+                        plugin.getConfig().getString("chat-formats.hover.default.message", null)
                 ));
             }
         }
@@ -70,10 +70,12 @@ public class PreviewRenderer {
 
         if (plugin.getConfig().getBoolean("emojis.current-item") && source != null) {
             ItemStack hand = source.getInventory().getItemInMainHand();
-            message = message.replaceText(i -> {
-                i.matchLiteral("[item]");
-                i.replacement(hand.displayName().hoverEvent(hand));
-            });
+            if (hand.getType() != Material.AIR) {
+                message = message.replaceText(i -> {
+                    i.matchLiteral("[item]");
+                    i.replacement(hand.displayName().hoverEvent(hand));
+                });
+            }
         }
 
         String stringMessage = PlainTextComponentSerializer.plainText().serialize(message);
@@ -117,26 +119,23 @@ public class PreviewRenderer {
             );
         }
 
-        FormatConfig g = null;
-        if (plugin.getConfig().isConfigurationSection("chat-formats.formats." + group)) {
-            String formatString = plugin.getConfig().getString("chat-formats.formats.default", null);
-            if (formatString != null) {
-                g = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
-                        plugin.getConfig().getString("chat-formats.hover." + group + ".click-command", plugin.getConfig().getString("chat-formats.hover." + group + ".click-command", null)),
-                        plugin.getConfig().getString("chat-formats.hover." + group + ".message", plugin.getConfig().getString("chat-formats.hover." + group + ".message", null))
-                ));
-            }
-        }
-
         FormatConfig config;
-        if (defaultFormatConfig != null) {
-            config = Objects.requireNonNullElse(g, defaultFormatConfig);
+        if (plugin.getConfig().get("chat-formats.formats." + group) != null) {
+            String formatString = plugin.getConfig().getString("chat-formats.formats." + group, null);
+            if (formatString != null) {
+                config = new FormatConfig(ColorUtil.parse(formatString), new HoverConfig(
+                        plugin.getConfig().getString("chat-formats.hover." + group + ".click-command", null),
+                        plugin.getConfig().getString("chat-formats.hover." + group + ".message", null)
+                ));
+            } else {
+                config = defaultFormatConfig;
+            }
         } else {
-            config = g;
+            config = defaultFormatConfig;
         }
 
         if (config == null) {
-            LoggerUtil.log(LogType.WARNING, "Could not find format for player, sending the processed message " + source.getName());
+            LoggerUtil.log(LogType.WARNING, "Could not find format for player, sending the processed message for preview");
             return message;
         }
 
