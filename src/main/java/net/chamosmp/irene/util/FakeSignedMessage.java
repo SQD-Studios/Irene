@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
@@ -28,7 +27,7 @@ public class FakeSignedMessage implements SignedMessage {
 
     private final UUID senderUuid;
 
-    public FakeSignedMessage(Component message, String stringMessage, @Nullable UUID senderUuid) throws NoSuchAlgorithmException {
+    public FakeSignedMessage(Component message, String stringMessage, @Nullable UUID senderUuid) {
         this.message = message;
         this.stringMessage = stringMessage;
 

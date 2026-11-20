@@ -224,9 +224,8 @@ public class IreneChatRenderer implements ChatRenderer {
         if (signature != null && shouldAddDeleteButton)
             message = message.append(chatUtil.getDeleteMessageUtil().createDeleteButton(signature, source, viewer));
 
-        if (IS_PAPI_ENABLED) {
+        if (IS_PAPI_ENABLED)
             message = ColorUtil.parse(PlaceholderAPI.setRelationalPlaceholders(source, (Player) viewer, ColorUtil.deParse(message)));
-        }
 
         return message;
     }

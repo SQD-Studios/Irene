@@ -38,23 +38,19 @@ public class ChatReportListener implements PacketListener {
         Bukkit.getGlobalRegionScheduler().run(plugin, _ -> {
             Player player = event.getPlayer();
 
-            FakeSignedMessage sm;
-            try {
-                sm = new FakeSignedMessage(
-                        Component.text(message),
-                        message,
-                        player.getUniqueId()
-                );
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
+            Component renderedOnce = ireneChatRenderer.render(player, Component.text(message));
+            FakeSignedMessage sm = new FakeSignedMessage(
+                    renderedOnce,
+                    message,
+                    player.getUniqueId()
+            );
             ireneChatRenderer.setSignature(sm);
 
             Bukkit.getServer().forEachAudience(audience -> {
                 Component rendered = ireneChatRenderer.render(
                         player,
                         player.displayName(),
-                        Component.text(message),
+                        renderedOnce,
                         audience
                 );
                 sm.setMessage(rendered);

@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.geysermc.floodgate.api.FloodgateApi;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
 public class GeyserChatListener implements PacketListener {
@@ -48,23 +47,19 @@ public class GeyserChatListener implements PacketListener {
         Bukkit.getGlobalRegionScheduler().run(plugin, _ -> {
             Player player = event.getPlayer();
 
-            FakeSignedMessage sm;
-            try {
-                sm = new FakeSignedMessage(
-                        Component.text(message),
-                        message,
-                        player.getUniqueId()
-                );
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
+            Component renderedOnce = ireneChatRenderer.render(player, Component.text(message));
+            FakeSignedMessage sm = new FakeSignedMessage(
+                    renderedOnce,
+                    message,
+                    player.getUniqueId()
+            );
             ireneChatRenderer.setSignature(sm);
 
             Bukkit.getServer().forEachAudience(audience -> {
                 Component rendered = ireneChatRenderer.render(
                         player,
                         player.displayName(),
-                        Component.text(message),
+                        renderedOnce,
                         audience
                 );
                 sm.setMessage(rendered);
