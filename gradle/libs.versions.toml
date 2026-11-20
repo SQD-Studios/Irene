@@ -13,7 +13,7 @@ strokk-commands = "2.3.1"
 
 lettuce = "7.9.0.RELEASE"
 rabbitmq = "5.37.1"
-jnats = "2.26.4"
+jnats = "2.27.0"
 
 
 shadow = "9.6.1"
